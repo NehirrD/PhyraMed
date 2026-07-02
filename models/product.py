@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime,Text
-from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
 import enum
@@ -17,7 +16,7 @@ class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.id"),nullable=False)
+    category_id = Column(Integer, ForeignKey("category.id"),nullable=False)
     usage_purpose=Column(Text)
     evidence_level=Column(Enum(EvidenceLevel))
     expert_opinion_summary=Column(Text)
