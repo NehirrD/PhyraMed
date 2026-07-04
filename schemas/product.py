@@ -1,7 +1,9 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from models import EvidenceLevel, ProductStatus
+from schemas.risk import RiskResponse
+from schemas.source import SourceResponse
 
 
 class CreateProductRequest(BaseModel):
@@ -24,6 +26,8 @@ class ProductResponse(BaseModel):
     status:ProductStatus
     created_at:datetime
     updated_at:Optional[datetime]=None
+    risks: List[RiskResponse] = []
+    sources: List[SourceResponse] = []
 
     class Config:
         from_attributes = True

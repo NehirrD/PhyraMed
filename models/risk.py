@@ -1,4 +1,6 @@
 from sqlalchemy import Column, Integer, Text, ForeignKey, Enum
+from sqlalchemy.orm import relationship
+
 from database import Base
 import enum
 
@@ -13,3 +15,5 @@ class Risk(Base):
     product_id=Column(Integer,ForeignKey("products.id"),nullable=False)
     description=Column(Text,nullable=False)
     severity=Column(Enum(Severity),nullable=True)
+
+    product = relationship("Product", back_populates="risks")

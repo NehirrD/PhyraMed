@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime,Text
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
 import enum
@@ -25,3 +26,5 @@ class Product(Base):
     created_at=Column(DateTime(timezone=True), server_default=func.now())
     updated_at=Column(DateTime(timezone=True), onupdate=func.now())
 
+    risks = relationship("Risk", back_populates="product")
+    sources = relationship("Source", back_populates="product")
