@@ -77,12 +77,4 @@ ai/
 └── README.md
 ```
 
----
-
-## Geliştirme
-
-Çalışma branch'i: **`ai/dev5-melike`**
-
-Değişiklikleri bu branch'e commit/push et; `main`'e doğrudan yazma. İş bitince GitHub'dan PR aç.
-
 Ana proje bilgisi için: [../README.md](../README.md)
