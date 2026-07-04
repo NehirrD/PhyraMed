@@ -21,9 +21,9 @@ Story point ve teknik sorumlu atamaları, geliştirme ekibi tarafından Sprint P
 | PB-05 | Bilimsel ve resmî kaynakları görüntüleme | P0 | Sprint 2 |
 | PB-06 | Risk, yan etki ve etkileşim bilgilerini görüntüleme | P0 | Sprint 2 |
 | PB-07 | Tıbbi bilgilendirme uyarısını görüntüleme | P0 | Sprint 1 |
-| PB-08 | Fotoğraf yükleyerek bitkiyi tanıma | P0 | Sprint 2 |
-| PB-09 | Kullanıcı yorumlarının toplu analizini görüntüleme | P0 | Sprint 2 |
-| PB-10 | Chatbot üzerinden bilgi alma | P0 | Sprint 2 |
+| PB-08 | Fotoğraf yükleyerek bitkiyi tanıma | P1 | Sprint 2 |
+| PB-09 | Kullanıcı yorumlarının toplu analizini görüntüleme | P1 | Sprint 2 |
+| PB-10 | Chatbot üzerinden bilgi alma | P1 | Sprint 2 |
 
 ---
 
