@@ -75,6 +75,6 @@ ai/
 ├── poc/            # Deneme script'leri ve örnek veriler
 ├── requirements.txt
 └── README.md
-```
+``
 
 Ana proje bilgisi için: [../README.md](../README.md)
