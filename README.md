@@ -1,42 +1,39 @@
-# Takım 137
+# PhyraMed Frontend
 
-## Ürün İle İlgili Bilgiler
+Build aracı veya framework kullanılmamıştır; proje düz HTML/CSS/JS ile
+geliştirilmiştir.
 
-### Takım Elemanları
+## Çalıştırma
 
-* Enes Tüysüz: Product Owner - Developer
-* Nehir Doğan: Scrum Master - Developer
-* Melike Şenses: Developer
-* Alper Güler: Developer
-* Ahmet Kılıç: Developer
+Kurulum gerekmez. `index.html` dosyası tarayıcıda açılarak çalıştırılabilir.
 
-### Ürün İsmi - PhyraMed
+## Klasör yapısı
 
-### Ürün Açıklaması
+```
+index.html            Anasayfa
+pages/
+  urun.html            Ürün detay sayfası (?id= parametresiyle çalışır)
+  profil.html          Profil ve geçmiş aramalar sayfası
+css/style.css          Tasarım sistemi
+js/
+  data.js              Mock veri (backend modelleriyle uyumlu)
+  main.js              Ortak bileşenler ve arayüz mantığı
+```
 
-* PhyraMed, bitkisel takviye ve doğal ürünler hakkında kanıta dayalı bilgi sunan AI destekli bir platformdur. Kullanıcılar ihtiyaçlarına (örn. demir eksikliği, kilo verme) göre bitkisel ürünleri keşfedebilir; her ürün için bilimsel kanıt seviyesi, uzman görüşleri, olası riskler ve yan etkiler şeffaf bir şekilde sunulur. Platform ayrıca kullanıcı yorumlarını yapay zeka ile toplu olarak analiz ederek en sık bildirilen yan etki ve deneyimleri özetler, tanınmayan bitkileri fotoğraf yoluyla tanımlar.
+## Teknik notlar
 
-### Ürün Özellikleri
+- Navbar, footer ve chatbot bileşenleri `js/main.js` üzerinden tüm
+  sayfalara enjekte edilir; tekrar eden HTML bulunmaz.
+- Veri alanları backend'deki `models/*.py` yapısıyla birebir uyumludur.
+  API entegrasyonunda `js/data.js` içindeki mock veriler `fetch()`
+  çağrılarıyla değiştirilir, sayfa tarafında ek değişiklik gerekmez.
+- Kullanıcıdan/veritabanından gelen tüm metin alanları `escapeHTML()`
+  ile işlenir.
+- Veri yüklenirken iskelet (skeleton) bileşenleri gösterilir.
+- Script'ler `defer` ile yüklenir; tek bir `PhyraMed` nesnesi altında
+  toplanır.
 
-* Kategori/ihtiyaç bazlı bitkisel ürün listeleme (demir eksikliği, uyku sorunu, kilo verme vb.)
-* Her ürün için kanıt seviyesi rozeti (Yüksek / Orta / Sadece geleneksel kullanım)
-* Uzman ve doktor görüşlerinin sunulması
-* Olası risk ve yan etki bilgilendirmesi
-* Fotoğraf yükleyerek bitki/ürün tanıma
-* Kullanıcı yorumlarının AI ile toplu sentezi (en sık bildirilen yan etki, olumlu/olumsuz dağılım)
-* Ürünler arası karşılaştırma
-* Sohbet tabanlı AI asistan - chatbot
+## Sorumluluk reddi
 
-### Hedef Kitle
-
-* Bitkisel takviye satın almadan önce araştırma yapan tüketiciler
-* Sağlıklı yaşam ve beslenme takipçileri
-* Doğada karşılaştığı bitkiyi tanımak isteyen kullanıcılar
-* Online alışveriş yorumlarının güvenilirliğini sorgulayan kullanıcılar
-* 18 - 60 yaş arası, sağlık/beslenme bilincine sahip kullanıcılar
-
-### Product Backlog URL
-
-
-
-> **Not:** Bu platform tıbbi tavsiye sunmaz, yalnızca bilgilendirme amaçlıdır. Kullanıcılar herhangi bir sağlık kararı öncesinde doktorlarına danışmalıdır.
+Platformun tıbbi teşhis/tedavi amacı taşımadığı bilgisi footer'da,
+ürün detay sayfasında ve chatbot'un ilk mesajında belirtilmiştir.
