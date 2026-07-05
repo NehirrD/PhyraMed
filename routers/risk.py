@@ -44,6 +44,9 @@ async def update_risk(db:db_dependency,risk_id:int,request:schemas.CreateRiskReq
     risk=db.query(models.Risk).filter(models.Risk.id==risk_id).first()
     if risk is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    product = db.query(models.Product).filter(models.Product.id == request.product_id).first()
+    if product is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     risk.product_id=request.product_id
     risk.description=request.description
     risk.severity=request.severity

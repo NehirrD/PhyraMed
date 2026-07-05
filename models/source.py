@@ -9,6 +9,6 @@ class Source(Base):
     product_id=Column(Integer, ForeignKey("products.id"),nullable=False)
     type=Column(String)
     url=Column(String)
-    title=Column(String,nullable=False)
+    title=Column(String,nullable=True)
 
-product = relationship("Product", back_populates="sources")
+    product = relationship("Product", back_populates="sources")
