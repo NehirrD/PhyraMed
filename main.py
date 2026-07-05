@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from database import Base, engine
-from routers import category, product
+from routers import category, product, risk
 import models
 app = FastAPI()
 app.include_router(category.router)
 app.include_router(product.router)
+app.include_router(risk.router)
 
 import models.category
 import models.product

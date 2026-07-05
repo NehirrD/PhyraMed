@@ -13,5 +13,6 @@ class RiskResponse(BaseModel):
     description: str
     severity: Optional[Severity] = None
 
+
     class Config:
         from_attributes=True
