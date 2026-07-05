@@ -6,27 +6,26 @@ from models import EvidenceLevel, ProductStatus
 
 class CreateProductRequest(BaseModel):
     name: str
-    category_id:int
-    usage_purpose: str
-    evidence_level:EvidenceLevel
-    expert_opinion_summary:str
-    image_url:str
-    status:ProductStatus
+    category_id: int
+    usage_purpose: Optional[str] = None
+    evidence_level: Optional[str] = None
+    evidence_summary: Optional[str] = None
+    image_url: Optional[str] = None
+    status: Optional[str] = "ai_generated"
 
 class ProductResponse(BaseModel):
-    id:int
+    id: int
     name: str
-    category_id:int
-    usage_purpose: str
-    evidence_level:EvidenceLevel
-    expert_opinion_summary:str
-    image_url:str
-    status:ProductStatus
-    created_at:datetime
-    updated_at:Optional[datetime]=None
+    category_id: int
+    usage_purpose: Optional[str] = None
+    evidence_level: Optional[str] = None
+    evidence_summary: Optional[str] = None  
+    image_url: Optional[str] = None
+    status: Optional[str] = None
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 
 
