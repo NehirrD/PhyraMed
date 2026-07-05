@@ -15,6 +15,7 @@ import models.source
 
 Base.metadata.create_all(bind=engine)
 
+#routerlar eklenecek!
 @app.get("/")
 def root():
     return {"message": "PhyraMed API çalışıyor"}
