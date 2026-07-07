@@ -60,18 +60,9 @@ async def update_risk(db: db_dependency, risk_id: int, request: schemas.CreateRi
     risk = db.query(models.Risk).filter(models.Risk.id == risk_id).first()
     if risk is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-<<<<<<< HEAD
     risk.product_id = request.product_id
     risk.description = request.description
     risk.severity = request.severity
-=======
-    product = db.query(models.Product).filter(models.Product.id == request.product_id).first()
-    if product is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
-    risk.product_id=request.product_id
-    risk.description=request.description
-    risk.severity=request.severity
->>>>>>> 9c2839c8ed127a634e56ea9db5c77ee3968a6ad7
     db.commit()
     db.refresh(risk)
     return risk
@@ -88,3 +79,4 @@ async def delete_risk(db: db_dependency, risk_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     db.delete(risk)
     db.commit()
+

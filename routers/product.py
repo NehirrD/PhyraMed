@@ -1,6 +1,6 @@
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from starlette import status
 import models
 import schemas
@@ -52,13 +52,23 @@ async def list_products(db: db_dependency, q: str = None, category_id: int = Non
     else:
         query = query.order_by(sort_column.asc())
         
-    products = query.all()
+    # 🚀 IŞIK HIZI EKLENTİSİ BURADA: Riskleri ve Kaynakları tek sorguda paketliyoruz!
+    products = query.options(
+        selectinload(models.Product.risks),
+        selectinload(models.Product.sources)
+    ).all()
+    
     return products
 
 # Seçilen ürün bilgisini döner:
 @router.get("/{product_id}", status_code=status.HTTP_200_OK, response_model=schemas.ProductResponse)
 async def get_product_info(db: db_dependency, product_id: int):
-    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    # 🚀 AYNI EKLENTİYİ BURAYA DA YAPTIK: Tekil ürün sayfasında da anında açılsın
+    product = db.query(models.Product).options(
+        selectinload(models.Product.risks),
+        selectinload(models.Product.sources)
+    ).filter(models.Product.id == product_id).first()
+    
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
