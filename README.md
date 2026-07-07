@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/sprint-1/product-status/phyramed-brand-header.png" alt="PhyraMed Marka Görseli" width="100%">
+</p>
+
 # Takım 137
 
 ## Ürün ile İlgili Bilgiler
