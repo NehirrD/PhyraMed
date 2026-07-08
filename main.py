@@ -3,12 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from database import Base, engine
 from routers import category, product, risk ,source
+from routers import analysis
+from routers import comment
+
 import models
 app = FastAPI()
 app.include_router(category.router)
 app.include_router(product.router)
 app.include_router(risk.router)
 app.include_router(source.router)
+app.include_router(analysis.router)
+app.include_router(comment.router)
 
 import models.category
 import models.product

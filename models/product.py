@@ -25,6 +25,7 @@ class Product(Base):
     status=Column(Enum(ProductStatus))
     created_at=Column(DateTime(timezone=True), server_default=func.now())
     updated_at=Column(DateTime(timezone=True), onupdate=func.now())
-
+     
     risks = relationship("Risk", back_populates="product")
     sources = relationship("Source", back_populates="product")
+    comments = relationship("Comment", back_populates="product", cascade="all, delete")
