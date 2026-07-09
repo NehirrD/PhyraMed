@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import requests
 
 BASE_URL = "http://127.0.0.1:8000"
@@ -9,10 +8,11 @@ def seed_database(excel_file_path):
     
     categories_df = pd.read_excel(excel_file_path, sheet_name='Categories')
     products_df = pd.read_excel(excel_file_path, sheet_name='ProductClaims')
+    sources_df = pd.read_excel(excel_file_path, sheet_name='Sources')
 
-    # KRİTİK DÜZELTME: Tüm boş hücreleri (NaN) kesin olarak None'a çeviren zırh
     categories_df = categories_df.astype(object).where(pd.notnull(categories_df), None)
     products_df = products_df.astype(object).where(pd.notnull(products_df), None)
+    sources_df = sources_df.astype(object).where(pd.notnull(sources_df), None)
 
     print("1️⃣ Kategoriler veritabanına işleniyor...")
     category_id_map = {}
@@ -24,69 +24,69 @@ def seed_database(excel_file_path):
         }
         
         response = requests.post(f"{BASE_URL}/category/", json=cat_payload)
-        
         if response.status_code in [200, 201]:
-            created_category = response.json()
-            category_id_map[row['category_id']] = created_category['id']
+            category_id_map[row['category_id']] = response.json()['id']
             print(f"  ✅ Kategori eklendi: {row['category_name']}")
-        else:
-            print(f"  ❌ HATA (Kategori): {row['category_name']} -> {response.text}")
 
-    print("\n2️⃣ Ürünler ve ilişkili risk/etkileşim verileri işleniyor...")
+    print("\n2️⃣ Ürünler ve riskler işleniyor...")
+
+    claim_id_to_db_product_id_map = {} 
     
-    # Türkçe Enum Çevirmeni
-    evidence_map = {
-        "Yüksek": "HIGH",
-        "Orta": "MIDDLE",
-        "Düşük": "LOW"
-    }
+    evidence_map = {"Yüksek": "HIGH", "Orta": "MIDDLE", "Düşük": "LOW", "Bekliyor": "PENDING"}
 
     for index, row in products_df.iterrows():
         db_category_id = category_id_map.get(row['category_id'])
+        if not db_category_id: continue
+
+        raw_level = str(row['evidence_level']).strip() if row.get('evidence_level') else None
         
-        if not db_category_id:
-            continue
-
-        # Gelen kanıt seviyesini temizle ve çevir (Boşsa veya Bekliyorsa None yap)
-        raw_level = str(row['evidence_level']).strip() if row['evidence_level'] else None
-        mapped_level = evidence_map.get(raw_level, None)
-
-        # --- ÜRÜN (PRODUCT) PAKETİ ---
         product_payload = {
             "name": row['product_name_tr'],
             "usage_purpose": row['usage_purpose'],
-            "evidence_level": mapped_level,
+            "evidence_level": evidence_map.get(raw_level, None),
+            "evidence_summary": row['evidence_summary'], 
             "category_id": db_category_id
         }
 
-        prod_response = requests.post(f"{BASE_URL}/product/", json=product_payload)
+        prod_res = requests.post(f"{BASE_URL}/product/", json=product_payload)
         
-        if prod_response.status_code in [200, 201]:
-            created_product = prod_response.json()
-            db_product_id = created_product['id']
-            print(f"  ✅ Ürün eklendi: {row['product_name_tr']}")
+        if prod_res.status_code in [200, 201]:
+            db_product_id = prod_res.json()['id']
+            print(f"  ✅ Ürün: {row['product_name_tr']}")
 
-            # --- RİSK PAKETİ ---
-            if row['risk_summary']:
-                risk_payload = {
-                    "description": row['risk_summary'],
-                    "product_id": db_product_id
-                }
-                # Nehir /risk ucunu açtığında çalışması için buraya bir try-except koyduk
-                try: requests.post(f"{BASE_URL}/risk/", json=risk_payload)
-                except: pass
+        
+            if row.get('claim_id'):
+                claim_id_to_db_product_id_map[row['claim_id']] = db_product_id
 
-            # --- ETKİLEŞİM PAKETİ ---
-            if row['interaction_summary']:
-                interaction_payload = {
-                    "description": row['interaction_summary'],
-                    "product_id": db_product_id
-                }
-                # Nehir /interaction ucunu açtığında çalışması için try-except
-                try: requests.post(f"{BASE_URL}/interaction/", json=interaction_payload)
-                except: pass
+            if row.get('risk_summary'):
+                requests.post(f"{BASE_URL}/risk/", json={"description": row['risk_summary'], "severity": "Orta", "product_id": db_product_id})
+
+            if row.get('interaction_summary'):
+                requests.post(f"{BASE_URL}/interaction/", json={"description": row['interaction_summary'], "product_id": db_product_id})
+
+    print("\n3️⃣ Bilimsel kaynaklar (Sources) veritabanına işleniyor...")
+    for index, row in sources_df.iterrows():
+    
+        excel_claim_id = row.get('claim_id')
+        
+        
+        db_product_id = claim_id_to_db_product_id_map.get(excel_claim_id)
+
+        if db_product_id:
+            source_payload = {
+                "title": row.get('title') or "Bilimsel Kaynak",
+                "type": row.get('source_type') or "Makale",
+                "url": row.get('url') or "https://phyramed.com",
+                "product_id": db_product_id
+            }
+            
+            source_res = requests.post(f"{BASE_URL}/source/", json=source_payload)
+            if source_res.status_code in [200, 201]:
+                print(f"  ✅ Kaynak eklendi: {source_payload['title'][:30]}...")
+            else:
+                print(f"  ❌ Kaynak Hatası: {source_res.text}")
         else:
-             print(f"  ❌ HATA (Ürün): {row['product_name_tr']} -> {prod_response.text}")
+            print(f"  ⚠️ Pas Geçildi: {excel_claim_id} eşleşmedi.")
 
     print("\n🎉 Tüm tohumlama işlemi tamamlandı!")
 
