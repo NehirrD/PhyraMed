@@ -27,7 +27,7 @@ async def create_interaction(db:db_dependency,request:schemas.CreateInteractionR
     return interaction
 
 #Tek etkileşim detay:
-@router.get("/{interaction_id}",status_code=status.HTTP_200_OK)
+@router.get("/{interaction_id}",status_code=status.HTTP_200_OK,response_model=schemas.InteractionResponse)
 async def get_interaction(db:db_dependency,interaction_id: int):
     interaction=db.query(models.Interaction).filter(models.Interaction.id==interaction_id).first()
     if interaction is None:

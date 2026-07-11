@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from database import Base, engine
-import models
 from routers.category import router as category_router
 from routers.interaction import router as interaction_router
 from routers.product import router as product_router
