@@ -14,17 +14,38 @@ Story point ve teknik sorumlu atamaları, geliştirme ekibi tarafından Sprint P
 
 | ID | Backlog Maddesi | Öncelik | Hedef Sprint |
 |---|---|---|---|
-| PB-01 | Ana kategorileri görüntüleme | P0 | Sprint 1 |
-| PB-02 | Seçilen kategoriye ait ürünleri listeleme | P0 | Sprint 1 |
-| PB-03 | Ürünün temel detaylarını görüntüleme | P0 | Sprint 1 |
+| PB-01 | Ana kategorileri görüntüleme | P0 | Sprint 2 — Sprint 1’den devreden |
+| PB-02 | Seçilen kategoriye ait ürünleri listeleme | P0 | Sprint 2 — Sprint 1’den devreden |
+| PB-03 | Ürünün temel detaylarını görüntüleme | P0 | Sprint 2 — Sprint 1’den devreden |
 | PB-04 | Bilimsel kanıt seviyesini görüntüleme | P0 | Sprint 2 |
 | PB-05 | Bilimsel ve resmî kaynakları görüntüleme | P0 | Sprint 2 |
 | PB-06 | Risk, yan etki ve etkileşim bilgilerini görüntüleme | P0 | Sprint 2 |
-| PB-07 | Tıbbi bilgilendirme uyarısını görüntüleme | P0 | Sprint 1 |
+| PB-07 | Tıbbi bilgilendirme uyarısını görüntüleme | P0 | Sprint 2 — Sprint 1’den devreden |
 | PB-08 | Fotoğraf yükleyerek bitkiyi tanıma | P0 | Sprint 2 |
 | PB-09 | Kullanıcı yorumlarının toplu analizini görüntüleme | P0 | Sprint 2 |
 | PB-10 | Chatbot üzerinden bilgi alma | P0 | Sprint 2 |
 
+## Sprint 2 Uygulama Önceliği
+
+Sprint 2 çalışmaları, temel kullanıcı akışının tamamlanması ve teknik bağımlılıklar dikkate alınarak aşağıdaki sırada ele alınacaktır:
+
+1. **Temel kullanıcı akışı**
+   - PB-01 — Ana kategorileri görüntüleme
+   - PB-02 — Seçilen kategoriye ait ürünleri listeleme
+   - PB-03 — Ürünün temel detaylarını görüntüleme
+   - PB-07 — Tıbbi bilgilendirme uyarısını görüntüleme
+
+2. **Bilimsel bilgi ve güvenlik katmanı**
+   - PB-04 — Bilimsel kanıt seviyesini görüntüleme
+   - PB-05 — Bilimsel ve resmî kaynakları görüntüleme
+   - PB-06 — Risk, yan etki ve etkileşim bilgilerini görüntüleme
+
+3. **Yapay zekâ destekli özellikler**
+   - PB-08 — Fotoğraf yükleyerek bitkiyi tanıma
+   - PB-09 — Kullanıcı yorumlarının toplu analizini görüntüleme
+   - PB-10 — Chatbot üzerinden bilgi alma
+
+Bu sıralama, özelliklerin Jira üzerindeki durumunu otomatik olarak tamamlanmış kabul etmez. Her Product Backlog maddesi, kendi kabul kriterleri doğrulandıktan sonra tamamlanır.
 ---
 
 ## PB-01 – Ana Kategorileri Görüntüleme
