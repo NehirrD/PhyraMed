@@ -14,13 +14,13 @@ Story point ve teknik sorumlu atamaları, geliştirme ekibi tarafından Sprint P
 
 | ID | Backlog Maddesi | Öncelik | Hedef Sprint |
 |---|---|---|---|
-| PB-01 | Ana kategorileri görüntüleme | P0 | Sprint 1 |
-| PB-02 | Seçilen kategoriye ait ürünleri listeleme | P0 | Sprint 1 |
-| PB-03 | Ürünün temel detaylarını görüntüleme | P0 | Sprint 1 |
+| PB-01 | Ana kategorileri görüntüleme | P0 | Sprint 2 — Sprint 1’den devreden |
+| PB-02 | Seçilen kategoriye ait ürünleri listeleme | P0 | Sprint 2 — Sprint 1’den devreden |
+| PB-03 | Ürünün temel detaylarını görüntüleme | P0 | Sprint 2 — Sprint 1’den devreden |
 | PB-04 | Bilimsel kanıt seviyesini görüntüleme | P0 | Sprint 2 |
 | PB-05 | Bilimsel ve resmî kaynakları görüntüleme | P0 | Sprint 2 |
 | PB-06 | Risk, yan etki ve etkileşim bilgilerini görüntüleme | P0 | Sprint 2 |
-| PB-07 | Tıbbi bilgilendirme uyarısını görüntüleme | P0 | Sprint 1 |
+| PB-07 | Tıbbi bilgilendirme uyarısını görüntüleme | P0 | Sprint 2 — Sprint 1’den devreden |
 | PB-08 | Fotoğraf yükleyerek bitkiyi tanıma | P0 | Sprint 2 |
 | PB-09 | Kullanıcı yorumlarının toplu analizini görüntüleme | P0 | Sprint 2 |
 | PB-10 | Chatbot üzerinden bilgi alma | P0 | Sprint 2 |
