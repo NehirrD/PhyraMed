@@ -6,14 +6,17 @@ PhyraMed'de kullanıcı bitki fotoğrafı yükleyecek. Sprint 1 için en basit s
 
 | Seçenek | Zorluk | Ücret | Sprint 1 için |
 |---------|--------|-------|---------------|
-| **Groq Llama 4 Scout (vision)** | Kolay | Ücretsiz kota | ✅ En hızlı POC |
+| **Groq Qwen 3.6 27B (vision)** | Kolay | Ücretsiz kota | ✅ Güncel vision modeli |
+| Groq Llama 4 Scout (vision) | Kolay | — | ❌ 2026-07-17'de kaldırıldı |
 | OpenAI GPT-4o (vision) | Kolay | Ücretli | Alternatif |
 | Google Cloud Vision | Orta | Ücretsiz kotası var | Backend entegrasyonu gerekir |
 | Hugging Face (yerel model) | Zor | Ücretsiz | ❌ İlk sprint için fazla |
 
 ## Sprint 1 önerisi
 
-**Groq `meta-llama/llama-4-scout-17b-16e-instruct`** — hızlı, ücretsiz kota, tek API çağrısı.
+**Groq `qwen/qwen3.6-27b`** — güncel multimodal model (Llama 4 Scout yerine).
+
+> **Not:** `meta-llama/llama-4-scout-17b-16e-instruct` Groq'ta **17 Temmuz 2026**'da kaldırıldı. 404 alırsan model adını kontrol et.
 
 ## POC denemesi
 
@@ -27,9 +30,18 @@ python poc/image_test.py poc/sample/ginger.jpg
 # veya sadece dosya adı: python poc/image_test.py ginger.jpg
 ```
 
-Fotoğraf **4 MB altında** olmalı (Groq base64 limiti).
+Fotoğraf **20 MB altında** olmalı (Groq vision limiti).
+
+## Sprint 2 — değerlendirme
+
+Etiketli veri seti ve doğruluk ölçümü eklendi. Detay: [`05-gorsel-degerlendirme.md`](05-gorsel-degerlendirme.md)
+
+```powershell
+python poc/image_eval.py
+python poc/image_eval.py --prompt-v2
+```
 
 ## Sonuç / karar
 
-- [ ] Seçilen API: _______________
-- [ ] Neden: _______________
+- [x] Seçilen API: Groq Qwen 3.6 27B (`qwen/qwen3.6-27b`)
+- [x] Neden: Llama 4 Scout kaldırıldı; Groq'un güncel vision modeli

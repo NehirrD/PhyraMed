@@ -1,0 +1,96 @@
+[
+  {
+    "id": 1,
+    "name": "Melatonin",
+    "category": "Uyku ve Dinlenme",
+    "plant": "Melatonin",
+    "evidence_level": "Bekleniyor",
+    "usage_purpose": "Uykuya geçiş süresini destekleme",
+    "claim": "Uykuya dalma süresini kısaltmaya yardımcı olabilir.",
+    "evidence_summary": "Melatonin, jet lag ve uykuya geçiş süresinin azaltılmasında en fazla araştırılmış takviyelerden biridir.",
+    "risk_summary": "Baş ağrısı, gündüz uyku hali ve baş dönmesi görülebilir.",
+    "interaction_summary": "Kan sulandırıcılar ve bazı antidepresanlarla etkileşime girebilir.",
+    "keywords": [
+      "melatonin",
+      "uyku",
+      "uykusuzluk",
+      "jet lag",
+      "dinlenme"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Magnezyum",
+    "category": "Uyku ve Dinlenme",
+    "plant": "Magnezyum",
+    "evidence_level": "Bekleniyor",
+    "usage_purpose": "Kas gevşemesi ve uyku desteği",
+    "claim": "Kas fonksiyonlarını destekleyebilir ve uyku kalitesine katkı sağlayabilir.",
+    "evidence_summary": "Bazı çalışmalarda uyku kalitesini artırabileceği gösterilmiştir.",
+    "risk_summary": "Yüksek dozlarda ishal ve mide rahatsızlığı görülebilir.",
+    "interaction_summary": "Bazı antibiyotiklerle birlikte alınmamalıdır.",
+    "keywords": [
+      "magnezyum",
+      "uyku",
+      "kas",
+      "gevşeme"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Zencefil",
+    "category": "Sindirim",
+    "plant": "Zingiber officinale",
+    "evidence_level": "Bekleniyor",
+    "usage_purpose": "Mide bulantısını azaltmaya destek",
+    "claim": "Gebelik bulantısı ve hareket hastalığında yardımcı olabilir.",
+    "evidence_summary": "Bulantı üzerine etkinliği birçok klinik çalışmada araştırılmıştır.",
+    "risk_summary": "Mide ekşimesi görülebilir.",
+    "interaction_summary": "Kan sulandırıcı kullanan kişiler doktora danışmalıdır.",
+    "keywords": [
+      "zencefil",
+      "ginger",
+      "mide",
+      "bulantı",
+      "sindirim"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Nane",
+    "category": "Sindirim",
+    "plant": "Mentha piperita",
+    "evidence_level": "Bekleniyor",
+    "usage_purpose": "Sindirim sistemi desteği",
+    "claim": "Gaz ve şişkinlik şikayetlerini azaltmaya yardımcı olabilir.",
+    "evidence_summary": "IBS semptomları üzerine yapılan çalışmalarda olumlu sonuçlar bildirilmiştir.",
+    "risk_summary": "Reflü şikayetlerini artırabilir.",
+    "interaction_summary": "Şiddetli reflüsü olan kişiler dikkatli kullanmalıdır.",
+    "keywords": [
+      "nane",
+      "mint",
+      "gaz",
+      "şişkinlik",
+      "ibs"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Zerdeçal",
+    "category": "Eklem ve İnflamasyon",
+    "plant": "Curcuma longa",
+    "evidence_level": "Bekleniyor",
+    "usage_purpose": "İnflamasyon desteği",
+    "claim": "Eklem sağlığını desteklemeye yardımcı olabilir.",
+    "evidence_summary": "Kurkumin üzerine çok sayıda klinik çalışma bulunmaktadır.",
+    "risk_summary": "Mide rahatsızlığı görülebilir.",
+    "interaction_summary": "Safra kesesi hastalığı olan kişiler doktora danışmalıdır.",
+    "keywords": [
+      "zerdeçal",
+      "turmeric",
+      "kurkumin",
+      "eklem",
+      "inflamasyon"
+    ]
+  }
+]

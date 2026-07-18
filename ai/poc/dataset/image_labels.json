@@ -1,0 +1,21 @@
+[
+  {"file":"ginger.jpg","expected_tr":"zencefil","aliases":["ginger","zingiber officinale"]},
+  {"file":"ginger1.png","expected_tr":"zencefil","aliases":["ginger","zingiber officinale"]},
+  {"file":"ginger2.jpg","expected_tr":"zencefil","aliases":["ginger","zingiber officinale"]},
+  {"file":"ginger3.jpg","expected_tr":"zencefil","aliases":["ginger","zingiber officinale"]},
+  {"file":"ginger4.jpg","expected_tr":"zencefil","aliases":["ginger","zingiber officinale"]},
+
+  {"file":"mint.jpg","expected_tr":"nane","aliases":["mint","peppermint","mentha piperita"]},
+  {"file":"mint1.jpg","expected_tr":"nane","aliases":["mint","peppermint","mentha piperita"]},
+  {"file":"mint2.jpg","expected_tr":"nane","aliases":["mint","peppermint","mentha piperita"]},
+  {"file":"mint3.jpg","expected_tr":"nane","aliases":["mint","peppermint","mentha piperita"]},
+  {"file":"mint4.jpg","expected_tr":"nane","aliases":["mint","peppermint","mentha piperita"]},
+
+  {"file":"turmeric.jpg","expected_tr":"zerdeçal","aliases":["turmeric","curcuma longa"]},
+  {"file":"turmeric1.jpg","expected_tr":"zerdeçal","aliases":["turmeric","curcuma longa"]},
+  {"file":"turmeric2.jpg","expected_tr":"zerdeçal","aliases":["turmeric","curcuma longa"]},
+  {"file":"turmeric3.jpg","expected_tr":"zerdeçal","aliases":["turmeric","curcuma longa"]},
+  {"file":"turmeric4.jpg","expected_tr":"zerdeçal","aliases":["turmeric","curcuma longa"]}
+
+
+]

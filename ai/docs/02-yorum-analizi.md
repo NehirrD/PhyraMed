@@ -37,7 +37,15 @@ python poc/sentiment_test.py --groq
 
 Özet: Olumlu 4, Olumsuz 5, Nötr 1
 
-- Olumlu: __ / 10
-- Olumsuz: __ / 10
-- En sık geçen konular: ___
+## Sprint 2 — standart özet formatı
+
+Sprint 2'de JSON şeması belirlendi. Detay: [`04-yorum-ozet-formati.md`](04-yorum-ozet-formati.md)
+
+```powershell
+python poc/sentiment_summary.py
+```
+
+Örnek çıktı (10 yorum):
+- Olumlu/olumsuz: %50 / %50
+- En sık bildirilen yan etki: baş ağrısı
 

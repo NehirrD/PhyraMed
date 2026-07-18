@@ -23,7 +23,15 @@ PhyraMed chatbot'u bitkisel ürünler hakkında **bilgilendirme** yapacak (tıbb
 
 **Gerekçe:** Az ürün, hızlı demo, backend entegrasyonu kolay.
 
+## Sprint 2 — uygulama
+
+Temel chatbot kuruldu. Detay: [`06-chatbot-sprint2.md`](06-chatbot-sprint2.md)
+
+```powershell
+python poc/chatbot.py --question "Zencefil mide bulantısına iyi gelir mi?"
+```
+
 ## Açık sorular (takımla netleştirilecek)
 
-- [ ] Backend ürün verisini nasıl verecek?
+- [ ] Backend ürün verisini REST API olarak verecek (`GET /api/products`)
 - [ ] Chatbot ürün önerecek mi, sadece bilgi mi verecek?
