@@ -14,7 +14,7 @@ class ProductStatus(str,enum.Enum):
     ai_generated="AI"
 
 class Product(Base):
-    __tablename__ = "products"
+    __tablename__ = "product"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     category_id = Column(Integer, ForeignKey("category.id"),nullable=False)
