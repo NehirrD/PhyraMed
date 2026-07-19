@@ -4,7 +4,7 @@
 
 ## Ürün İle İlgili Bilgiler
 
-### Takım Elemanları
+### Takım Üyeleri
 
 * Enes Tüysüz: Product Owner - Developer
 * Nehir Doğan: Scrum Master - Developer
