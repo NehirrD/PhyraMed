@@ -124,9 +124,9 @@ Sprint 1 görevleri Jira Sprint Board üzerinden takip edilmiştir.
 
 Aşağıda Sprint 1 sonunda güncellenen Jira Sprint Board ekran görüntüleri yer almaktadır.
 
-![Sprint 1 Jira Board - Genel Durum](<img width="1439" height="716" alt="sprint-board-1" src="https://github.com/user-attachments/assets/fccba1ff-8c79-4e11-a13f-f4abdc94e938" />)
+<img width="1439" height="716" alt="sprint-board-1" src="https://github.com/user-attachments/assets/fccba1ff-8c79-4e11-a13f-f4abdc94e938" />
 
-![Sprint 1 Jira Board - Devam Eden ve AI Görevleri](<img width="1442" height="361" alt="sprint-board-2" src="https://github.com/user-attachments/assets/12901870-1c39-4ba5-adec-c0e09c2b4636" />)
+<img width="1442" height="361" alt="sprint-board-2" src="https://github.com/user-attachments/assets/12901870-1c39-4ba5-adec-c0e09c2b4636" />
 
 ## Ürün Durumu: Ekran görüntüleri
 
@@ -134,11 +134,11 @@ Sprint 1 kapsamında ürünün temel bilgi mimarisi, veri yapısı ve ilk arayü
 
 Frontend tarafında PhyraMed ana sayfa taslağı, kategori kartları, kanıt seviyesi etiketleri ve temel ürün kartı görünümü oluşturulmuştur. Bu ekran Sprint 1 için statik/taslak ürün arayüzü olarak değerlendirilmiştir.
 
-![Sprint 1 Frontend Taslak Ekranı](<img width="1207" height="901" alt="frontend-homepage" src="https://github.com/user-attachments/assets/c77b790b-e492-45d1-8def-af69cc7d8cc4" />)
+<img width="1207" height="901" alt="frontend-homepage" src="https://github.com/user-attachments/assets/c77b790b-e492-45d1-8def-af69cc7d8cc4" />
 
 Backend tarafında FastAPI proje iskeleti, temel veri modelleri ve veritabanı şeması hazırlanmıştır.
 
-![Sprint 1 Veritabanı Şeması](<img width="1400" height="704" alt="database-diagram" src="https://github.com/user-attachments/assets/49ae19ef-8f5f-4938-8c60-140f63d95ecf" />)
+<img width="1400" height="704" alt="database-diagram" src="https://github.com/user-attachments/assets/49ae19ef-8f5f-4938-8c60-140f63d95ecf" />
 
 Sprint 1 içerisinde doğrulanmış olarak tamamlanan veya hazırlanan temel çıktılar şunlardır:
 
