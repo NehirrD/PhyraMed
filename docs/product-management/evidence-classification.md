@@ -276,7 +276,107 @@ Product Owner bilimsel uzman yerine geçmez; sınıflandırmanın tutarlı uygul
 - Cochrane Handbook – Kanıt kesinliğinin değerlendirilmesi
 - NIH National Center for Complementary and Integrative Health – Doğal ürünler ve bilimsel kanıtların değerlendirilmesi
 
-## 14. Sürüm Bilgisi
+## 14. Kaynak ve Güvenilirlik Etiketleme Modeli
+
+### 14.1 Temel Ayrım
+
+PhyraMed’de kaynak türü, kaynak doğrulama durumu, bilimsel kanıt seviyesi ve içerik inceleme durumu birbirinden bağımsız kavramlardır.
+
+- Kaynağın doğrulanmış olması, kullanım iddiasının otomatik olarak Güçlü kanıt seviyesine sahip olduğu anlamına gelmez.
+- Resmî bir kurum kaynağı bulunması, iddianın kesin olarak desteklendiği anlamına gelmez.
+- Bilimsel kanıt seviyesi tek bir kaynağa değil, ilgili kullanım iddiasına yönelik kaynakların bütününe göre değerlendirilir.
+- Kullanıcı yorumları, e-ticaret açıklamaları, pazarlama metinleri ve sosyal medya paylaşımları bilimsel kanıt kaynağı olarak kullanılmaz.
+- MVP kapsamında kaynak güvenilirliği için tek ve yanıltıcı bir sayısal puan üretilmez.
+
+### 14.2 Kaynakların İlişkilendirilmesi
+
+Her bilimsel veya resmî kaynak, doğrudan ürünün tamamına değil ilgili ürün-kullanım iddiası kaydına bağlanmalıdır.
+
+Temel ilişki:
+
+`Product → ProductClaim → Source`
+
+Her kaynak kaydında ilgili `claim_id` bulunmalıdır. Aynı ürünün farklı kullanım iddiaları farklı kaynaklara ve farklı kanıt seviyelerine sahip olabilir.
+
+### 14.3 Kaynak Türü
+
+Kaynak türü, kaynağın hangi bilimsel veya bilgilendirici sınıfa ait olduğunu gösterir.
+
+Kullanıcıya gösterilecek kontrollü değerler:
+
+- Sistematik derleme / meta-analiz
+- Resmî sağlık kuruluşu
+- Randomize kontrollü insan çalışması
+- Diğer insan çalışması
+- Hayvan / laboratuvar çalışması
+- Geleneksel kullanım / uzman değerlendirmesi
+
+Teknik enum veya kod adları backend ekibi tarafından belirlenebilir; ancak kullanıcıya gösterilen karşılıklar bu sınıflarla birebir eşleşmelidir.
+
+### 14.4 Kaynak Doğrulama Durumu
+
+Kaynak doğrulama durumu, bağlantının ve kaynak kimliğinin kontrol edilip edilmediğini gösterir.
+
+Kontrollü değerler:
+
+- `Bekliyor`: Kaynak henüz kontrol edilmemiştir.
+- `Doğrulandı`: Kaynak kimliği, bağlantısı ve ilgili kullanım iddiasıyla ilişkisi kontrol edilmiştir.
+- `Erişilemedi`: Kaynağa veya bağlantıya erişilememiştir.
+- `Uygun Değil`: Kaynak bilimsel/resmî kaynak kriterlerini karşılamamaktadır veya ilgili kullanım iddiasıyla yeterince ilişkili değildir.
+
+`Doğrulandı` durumu, kaynağın iddiayı desteklediği veya kanıt seviyesinin Güçlü olduğu anlamına gelmez.
+
+### 14.5 Kanıt Seviyesi ve İnceleme Durumu
+
+Kanıt seviyesi aşağıdaki değerleri desteklemelidir:
+
+- `Bekliyor`
+- `Değerlendirilemedi`
+- `Zayıf`
+- `Orta`
+- `Güçlü`
+
+`Bekliyor` ve `Değerlendirilemedi`, bilimsel kanıt seviyesi değil değerlendirme durumlarıdır; kullanıcı arayüzünde Güçlü/Orta/Zayıf ile aynı anlamda sunulmamalıdır.
+
+İçerik inceleme durumu ayrıca tutulmalıdır. `Taslak` içerik, onaylanmış veya yayıma hazır bilimsel sonuç olarak gösterilmemelidir.
+
+### 14.6 Beklenen Kaynak Alanları
+
+Kaynak veri yapısı en az aşağıdaki alanları desteklemelidir:
+
+- `source_id`
+- `claim_id`
+- `source_type`
+- `organization`
+- `title`
+- `url`
+- `publication_year`
+- `access_date`
+- `verification_status`
+- `verification_note`
+
+Teknik ekip alanların veri tiplerini ve tablo yapısını belirler. Product Owner, alanların ürün anlamının ve kullanıcıya gösterim kurallarının korunmasını denetler.
+
+### 14.7 Kullanıcı Arayüzü ve Yapay Zekâ Kullanımı
+
+- Kaynağın kuruluşu, başlığı ve erişilebilir bağlantısı gösterilmelidir.
+- Kaynak, ilgili kullanım iddiasıyla birlikte sunulmalıdır.
+- Erişilemeyen veya uygun olmayan kaynak doğrulanmış kaynak gibi gösterilmemelidir.
+- Chatbot yalnızca doğrulanmış PhyraMed bağlamındaki kaynakları bilimsel dayanak olarak kullanmalıdır.
+- Kullanıcı yorumları bilimsel kaynaklarla karıştırılmamalıdır.
+- Yeterli doğrulanmış bilgi bulunmadığında sistem tahminde bulunmamalıdır.
+
+### 14.8 Teknik Doğrulama Koşulu
+
+Bu modelin tamamlanmış sayılabilmesi için:
+
+1. Backend veri modeli ürün-kullanım iddiası-kaynak ilişkisini desteklemelidir.
+2. Kaynak türü ve doğrulama durumu için kontrollü değerler tanımlanmalıdır.
+3. Örnek ürün detay API cevabında kullanım iddiası, kanıt durumu ve kaynak bilgileri birlikte gösterilmelidir.
+4. Frontend ve chatbot ekipleri aynı alan sözleşmesini kullanabilmelidir.
+5. Teknik uygulama ilgili PR ve Jira kayıtlarıyla doğrulanmalıdır.
+
+## 15. Sürüm Bilgisi
 
 - Doküman sürümü: 1.0
 - Durum: Ekip incelemesine hazır
