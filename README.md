@@ -245,7 +245,7 @@ Sprint Review, Sprint 2 sonunda takımın geliştirdiği çıktıların sprint h
 
 **Alınan kararlar:**
 
-- Görsel tanıma, yorum analizi ve chatbot özelliklerinin temel/POC sürümlerinin başarıyla kurulduğu ve ürün veritabanına bağlandığı değerlendirilmiştir.
+- Görsel tanıma, yorum analizi ve chatbot özelliklerinin temel/POC sürümlerinin başarıyla tamamlandığı bildirilmiş ve ürün veritabanına ise sprint 3'de bağlanması kararlaştırılmıştır.
 - Kaynak/güvenilirlik etiketleme mantığının veri modeline işlenmesi çalışması devam ettiği için ilgili PBI'lar Sprint 3'e aktarılmıştır.
 - PB-04 ile PB-10 arasındaki story'lerin (bilimsel kanıt seviyesi, kaynak gösterimi, risk/etkileşim bilgisi, görsel tanıma arayüzü, yorum analizi arayüzü, chatbot arayüzü) frontend entegrasyonu Sprint 3 kapsamına alınmıştır.
 - Çıkan ürün çıktılarının çalışmasında ve testlerinde kritik bir problem görülmemiştir.
