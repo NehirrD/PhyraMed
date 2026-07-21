@@ -1,0 +1,105 @@
+{
+  "generated_at": "2026-07-18T19:17:53.856355+00:00",
+  "model": "qwen/qwen3.6-27b",
+  "dataset_size": 15,
+  "metrics": {
+    "exact_matches": 12,
+    "partial_matches": 0,
+    "misses": 3,
+    "errors": 0,
+    "strict_accuracy": 0.8,
+    "lenient_accuracy": 0.8
+  },
+  "results": [
+    {
+      "file": "ginger.jpg",
+      "expected": "zencefil",
+      "prediction": "Bitki (TR): Zencefil  \nBitki (EN): Ginger  \nGüven: yüksek  \nKısa not: Görseldeki kahverengi kabuklu, sarı içli ve dallı yapı, zencefil köküne ait tipik morfolojik özelliklerle tam uyumludur.",
+      "match": "exact"
+    },
+    {
+      "file": "ginger1.png",
+      "expected": "zencefil",
+      "prediction": "Bitki (TR): Zencefil\nBitki (EN): Ginger\nGüven: yüksek\nKısa not: Görseldeki karakteristik yumru yapısı ve yapraklar zencefil bitkisini işaret etmektedir.",
+      "match": "exact"
+    },
+    {
+      "file": "ginger2.jpg",
+      "expected": "zencefil",
+      "prediction": "Bitki (TR): Zencefil\nBitki (EN): Ginger\nGüven: yüksek\nKısa not: Görselde kahverengi kabuklu ve sarı etli zencefil kökleri ile dilimleri görülmektedir.",
+      "match": "exact"
+    },
+    {
+      "file": "ginger3.jpg",
+      "expected": "zencefil",
+      "prediction": "Bitki (TR): Zencefil\nBitki (EN): Ginger\nGüven: yüksek\nKısa not: Görselde zencefil bitkisinin yeryüzü altı gövdesi olan rizomları görülmektedir.",
+      "match": "exact"
+    },
+    {
+      "file": "ginger4.jpg",
+      "expected": "zencefil",
+      "prediction": "Bitki (TR): Zencefil\nBitki (EN): Ginger\nGüven: yüksek\nKısa not: Görselde zencefil kökü ve yaprakları detaylı bir şekilde çizilmiştir.",
+      "match": "exact"
+    },
+    {
+      "file": "mint.jpg",
+      "expected": "nane",
+      "prediction": "Bitki (TR): Nane\nBitki (EN): Mint\nGüven: yüksek\nKısa not: Görseldeki bitki, karakteristik dişli yaprak kenarları ve belirgin damar yapısıyla nane türlerinden biridir.",
+      "match": "exact"
+    },
+    {
+      "file": "mint1.jpg",
+      "expected": "nane",
+      "prediction": "Bitki (TR): Nane\nBitki (EN): Mint\nGüven: yüksek\nKısa not: Yaprakların kenarlarındaki dişler ve yüzeydeki belirgin damar yapısı, bu bitkinin nane (Mentha) türlerinden biri olduğunu göstermektedir.",
+      "match": "exact"
+    },
+    {
+      "file": "mint2.jpg",
+      "expected": "nane",
+      "prediction": "Bitki (TR): Nane\nBitki (EN): Mint\nGüven: yüksek\nKısa not: Görseldeki yaprakların kenarlarındaki dişler ve belirgin damar yapısı, özellikle nane türlerine (Mentha) özgüdür.",
+      "match": "exact"
+    },
+    {
+      "file": "mint3.jpg",
+      "expected": "nane",
+      "prediction": "Bitki (TR): Nane\nBitki (EN): Mint\nGüven: yüksek\nKısa not: Görseldeki bitki, karakteristik kıvrımlı yaprakları ve dişli kenarlarıyla nane türlerinden biridir.",
+      "match": "exact"
+    },
+    {
+      "file": "mint4.jpg",
+      "expected": "nane",
+      "prediction": "Bitki (TR): Nane\nBitki (EN): Mint\nGüven: yüksek\nKısa not: Dikdörtgen kesitli sapı ve dişli kenarlı, kıvrımlı yaprak yapısı nane türlerine (Mentha) özgüdür.",
+      "match": "exact"
+    },
+    {
+      "file": "turmeric.jpg",
+      "expected": "zerdeçal",
+      "prediction": "Bitki (TR): Zencefil\nBitki (EN): Ginger\nGüven: yüksek\nKısa not: Görseldeki kahverengi kabuklu ve içi turuncu renkli rizomlar, zencefilin karakteristik özelliklerine tam olarak uymaktadır.",
+      "match": "miss"
+    },
+    {
+      "file": "turmeric1.jpg",
+      "expected": "zerdeçal",
+      "prediction": "Bitki (TR): Zerdeçal\nBitki (EN): Turmeric\nGüven: yüksek\nKısa not: Görselde zerdeçalın taze rizomları ve toz halindeki hali görülmektedir.",
+      "match": "exact"
+    },
+    {
+      "file": "turmeric2.jpg",
+      "expected": "zerdeçal",
+      "prediction": "Bitki (TR): Zencefil  \nBitki (EN): Ginger  \nGüven: yüksek  \nKısa not: Görselde zencefil kökü ve yeşil yaprakları net bir şekilde görülmektedir.",
+      "match": "miss"
+    },
+    {
+      "file": "turmeric3.jpg",
+      "expected": "zerdeçal",
+      "prediction": "Bitki (TR): Zerdeçal\nBitki (EN): Turmeric\nGüven: yüksek\nKısa not: Görselde, kesitleri parlak turuncu-sarı renkte olan ve dış kabuğu kahverengimsi olan zerdeçal rizomları görülmektedir.",
+      "match": "exact"
+    },
+    {
+      "file": "turmeric4.jpg",
+      "expected": "zerdeçal",
+      "prediction": "Bitki (TR): Zencefil\nBitki (EN): Ginger\nGüven: yüksek\nKısa not: Görselde kahverengi kabuklu, kesitinde parlak turuncu renkli ve karakteristik yapraklarıyla zencefil rizomları görülmektedir.",
+      "match": "miss"
+    }
+  ]
+}

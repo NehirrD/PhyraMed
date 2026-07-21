@@ -2,19 +2,30 @@
 
 ## Mimari (Sprint 1 kararı uygulandı)
 
-```
+```text
 Kullanıcı sorusu
       ↓
 Anahtar kelime arama (product_db.py)
       ↓
-İlgili ürün(ler) bağlam olarak seçilir
-      ↓
-Prompt tabanlı yanıt (Groq veya şablon)
-      ↓
+Ürün bulundu mu?
+     ├── Evet
+     │      ↓
+     │  İlgili ürün(ler) prompt'a eklenir
+     │      ↓
+     │  Groq doğal dil cevabı üretir
+     │      ↓
+     │  Kaynak: Onaylanmış Bilgi
+     │
+     └── Hayır
+            ↓
+      Groq genel bilgisini kullanır
+            ↓
+      Kaynak: AI Yanıtı
+            ↓
 Bilgilendirme + disclaimer
 ```
 
-**RAG yok** — MVP için mock JSON ürün DB yeterli. Ürün sayısı arttığında RAG'e geçiş planlandı.
+**RAG yok** — MVP için mock JSON ürün veritabanı yeterlidir. Ürün sayısı arttığında, daha kapsamlı bir ürün veritabanına veya internet tabanlı bilgi kaynağına geçildiğinde RAG mimarisine geçilmesi planlanmaktadır.
 
 ## Ürün veritabanı
 
@@ -41,15 +52,41 @@ python poc/chatbot.py --groq --question "Demir eksikliği için ne önerirsiniz?
 
 ## Test soruları
 
-| Soru | Beklenen ürün |
-|------|---------------|
-| "Zencefil mide bulantısına iyi gelir mi?" | Zencefil Kapsül |
-| "Uyku için ne var?" | Melisa Uyku Damlası |
-| "Demir eksikliği takviyesi" | Spirulina Demir Destek |
+| Soru | Beklenen sonuç |
+|------|----------------|
+| "Zencefil mide bulantısına iyi gelir mi?" | Zencefil Kapsül (**Kaynak: Onaylanmış Bilgi**) |
+| "Uyku için ne var?" | Melisa Uyku Damlası (**Kaynak: Onaylanmış Bilgi**) |
+| "Demir eksikliği takviyesi" | Spirulina Demir Destek (**Kaynak: Onaylanmış Bilgi**) |
+| "Ashwagandha ne işe yarar?" | Ürün bulunamazsa Groq genel bilgisi (**Kaynak: AI Yanıtı**) |
 
 ## Backend entegrasyonu (öneri)
 
 - Endpoint: `POST /api/chat`
 - Body: `{ "question": "..." }`
-- AI modülü `search_products` + `groq_answer` pipeline'ını çalıştırır
-- Yanıt: `{ "answer": "...", "sources": [{"id": 1, "name": "..."}] }`
+- AI modülü önce `search_products` ile ürün veritabanında arama yapar.
+- Ürün bulunursa doğrulanmış ürün bilgileri kullanılarak cevap oluşturulur.
+- Ürün bulunamazsa Groq modelinin genel bilgisinden yararlanılarak cevap oluşturulur.
+- Yanıt örneği:
+
+```json
+{
+  "answer": "...",
+  "source": "verified_db",
+  "sources": [
+    {
+      "id": 1,
+      "name": "Zencefil Kapsül"
+    }
+  ]
+}
+```
+
+veya
+
+```json
+{
+  "answer": "...",
+  "source": "ai_generated",
+  "sources": []
+}
+```

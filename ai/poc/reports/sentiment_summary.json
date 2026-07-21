@@ -1,0 +1,30 @@
+{
+  "sentiment_distribution": {
+    "positive": {
+      "count": 3,
+      "ratio": 0.2
+    },
+    "negative": {
+      "count": 0,
+      "ratio": 0.0
+    },
+    "neutral": {
+      "count": 12,
+      "ratio": 0.8
+    },
+    "total_comments": 15
+  },
+  "most_reported_side_effect": "mide rahatsızlığı",
+  "side_effects": [
+    {
+      "effect": "mide rahatsızlığı",
+      "count": 1
+    },
+    {
+      "effect": "baş ağrısı",
+      "count": 1
+    }
+  ],
+  "summary_text": "15 yorum analiz edildi. Olumlu/olumsuz oranı: %20 olumlu, %0 olumsuz. En sık bildirilen yan etki: mide rahatsızlığı.",
+  "method": "keyword_rules"
+}

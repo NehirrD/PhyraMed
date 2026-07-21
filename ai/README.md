@@ -6,29 +6,44 @@ PhyraMed'in yapay zeka bileşenleri bu klasörde geliştirilir: **bitki görsel 
 
 ---
 
-## Sprint 1'de yapılanlar
+## Sprint 1 — Araştırma & POC
 
 | Alan | Durum | Açıklama |
 |------|-------|----------|
-| Görsel tanıma | POC hazır | Groq Llama 4 Scout ile bitki fotoğrafından tanımlama |
+| Görsel tanıma | POC hazır | Groq Qwen 3.6 27B (vision) ile bitki fotoğrafından tanımlama |
 | Yorum analizi | POC hazır | Olumlu/olumsuz/nötr sınıflandırma + özet |
 | Chatbot mimarisi | Karar verildi | MVP: prompt tabanlı; ileride RAG |
 
-### Araştırma dokümanları
+## Sprint 2 — Test & Temel Sürüm
 
-- [`docs/01-gorsel-tanima.md`](docs/01-gorsel-tanima.md) — API seçenekleri ve Groq önerisi
-- [`docs/02-yorum-analizi.md`](docs/02-yorum-analizi.md) — Sentiment yaklaşımları ve test sonuçları
-- [`docs/03-chatbot-mimari.md`](docs/03-chatbot-mimari.md) — Prompt vs RAG kararı
+| Alan | Durum | Açıklama |
+|------|-------|----------|
+| Görsel tanıma | Değerlendirme | Etiketli veri seti + doğruluk metrikleri (`image_eval.py`) |
+| Yorum analizi | Format belirlendi | Olumlu/olumsuz oran + en sık yan etki JSON şeması |
+| Chatbot | Temel sürüm | Ürün DB'ye bağlı prompt tabanlı asistan (`chatbot.py`) |
 
-### POC script'leri
+### Dokümanlar
 
-| Script | Ne yapar |
-|--------|----------|
-| `poc/image_test.py` | Bitki fotoğrafını Groq vision API ile analiz eder |
-| `poc/sentiment_test.py` | Örnek yorumları sınıflandırır (kelime listesi veya Groq) |
-| `poc/groq_client.py` | Groq API ortak istemcisi |
-| `poc/sample_comments.json` | Test için 10 örnek kullanıcı yorumu |
-| `poc/sample/` | Örnek bitki fotoğrafları (zencefil, nane, zerdeçal) |
+| Sprint | Dosya | Konu |
+|--------|-------|------|
+| 1 | [`docs/01-gorsel-tanima.md`](docs/01-gorsel-tanima.md) | API seçenekleri |
+| 1 | [`docs/02-yorum-analizi.md`](docs/02-yorum-analizi.md) | Sentiment yaklaşımları |
+| 1 | [`docs/03-chatbot-mimari.md`](docs/03-chatbot-mimari.md) | Prompt vs RAG |
+| 2 | [`docs/04-yorum-ozet-formati.md`](docs/04-yorum-ozet-formati.md) | Standart özet JSON |
+| 2 | [`docs/05-gorsel-degerlendirme.md`](docs/05-gorsel-degerlendirme.md) | Doğruluk ölçümü |
+| 2 | [`docs/06-chatbot-sprint2.md`](docs/06-chatbot-sprint2.md) | Chatbot kullanımı |
+
+### Script'ler
+
+| Script | Sprint | Ne yapar |
+|--------|--------|----------|
+| `poc/image_test.py` | 1 | Tek fotoğraf tanıma |
+| `poc/image_eval.py` | 2 | Veri seti doğruluk ölçümü |
+| `poc/sentiment_test.py` | 1 | Basit sentiment testi |
+| `poc/sentiment_summary.py` | 2 | Standart JSON özet üretir |
+| `poc/chatbot.py` | 2 | Ürün DB'ye bağlı chatbot |
+| `poc/product_db.py` | 2 | Ürün arama / bağlam |
+| `poc/groq_client.py` | 1 | Groq API istemcisi |
 
 ---
 
@@ -53,17 +68,21 @@ copy .env.example .env
 ## Çalıştırma
 
 ```powershell
-# Yorum analizi (key gerekmez)
+# --- Sprint 1 ---
 python poc/sentiment_test.py
-
-# Yorum analizi (Groq ile)
 python poc/sentiment_test.py --groq
-
-# Bitki fotoğrafı tanıma (key gerekir)
 python poc/image_test.py poc/sample/ginger.jpg
+
+# --- Sprint 2 ---
+python poc/sentiment_summary.py
+python poc/sentiment_summary.py --groq
+python poc/image_eval.py
+python poc/image_eval.py --prompt-v2
+python poc/chatbot.py --question "Zencefil mide bulantısına iyi gelir mi?"
+python poc/chatbot.py --groq
 ```
 
-Fotoğraflar **4 MB altında** olmalı (Groq base64 limiti).
+Fotoğraflar **20 MB altında** olmalı (Groq vision limiti).
 
 ---
 
@@ -71,8 +90,13 @@ Fotoğraflar **4 MB altında** olmalı (Groq base64 limiti).
 
 ```
 ai/
-├── docs/           # Sprint 1 araştırma ve karar notları
-├── poc/            # Deneme script'leri ve örnek veriler
+├── docs/                    # Araştırma ve karar notları
+├── poc/
+│   ├── data/products_db.json    # Mock ürün veritabanı
+│   ├── dataset/image_labels.json
+│   ├── reports/                 # Değerlendirme raporları (üretilir)
+│   ├── sample/                  # Bitki fotoğrafları
+│   └── *.py
 ├── requirements.txt
 └── README.md
 ``

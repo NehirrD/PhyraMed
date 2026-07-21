@@ -10,7 +10,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from groq_client import VISION_MODEL, get_groq_client
+from groq_client import extract_model_text, get_groq_client, vision_completion
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
@@ -52,8 +52,8 @@ def main():
     mime = MIME.get(img.suffix.lower(), "image/jpeg")
     b64 = base64.b64encode(img.read_bytes()).decode()
 
-    r = client.chat.completions.create(
-        model=VISION_MODEL,
+    r = vision_completion(
+        client,
         messages=[{
             "role": "user",
             "content": [
@@ -61,9 +61,9 @@ def main():
                 {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
             ],
         }],
-        max_tokens=300,
+        max_tokens=400,
     )
-    print(r.choices[0].message.content)
+    print(extract_model_text(r.choices[0].message.content or ""))
 
 
 if __name__ == "__main__":

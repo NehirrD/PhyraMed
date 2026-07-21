@@ -1,12 +1,62 @@
 [
-  "Bu zencefil kapsül gerçekten mide bulantıma iyi geldi, 2 haftadır kullanıyorum.",
-  "Hiçbir faydasını görmedim, para boşa gitti.",
-  "Kargo hızlıydı ama ürün kokusu biraz garip geldi bana.",
-  "Doktorum onayladı, demir eksikliğim için harika bir alternatif.",
-  "Yan etki olarak baş ağrısı yaptı, bıraktım.",
-  "Fiyat/performans olarak çok iyi, tekrar alacağım.",
-  "Kullanım talimatı yetersiz, nasıl dozajlayacağımı anlamadım.",
-  "Arkadaşım önerdi, uyku kalitem gerçekten arttı.",
-  "Alerjik reaksiyon yaptı, dikkatli olun.",
-  "Bilimsel kanıt seviyesi düşük ama geleneksel kullanımda etkili oldu bana."
+  {
+    "product":"Zencefil",
+    "comment":"Mide bulantıma gerçekten iyi geldi."
+  },
+  {
+    "product":"Zencefil",
+    "comment":"İlk hafta faydasını gördüm."
+  },
+  {
+    "product":"Zencefil",
+    "comment":"Bende mide ekşimesi yaptı."
+  },
+  {
+    "product":"Melatonin",
+    "comment":"Uykuya dalmamı kolaylaştırdı."
+  },
+  {
+    "product":"Melatonin",
+    "comment":"Sabah biraz sersem uyandım."
+  },
+  {
+    "product":"Melatonin",
+    "comment":"Çok memnun kaldım."
+  },
+  {
+    "product":"Magnezyum",
+    "comment":"Kas kramplarım azaldı."
+  },
+  {
+    "product":"Magnezyum",
+    "comment":"İshal yaptı."
+  },
+  {
+    "product":"Nane",
+    "comment":"Gaz problemime iyi geldi."
+  },
+  {
+    "product":"Nane",
+    "comment":"Reflümü biraz artırdı."
+  },
+  {
+    "product":"Zerdeçal",
+    "comment":"Eklem ağrılarım hafifledi."
+  },
+  {
+    "product":"Zerdeçal",
+    "comment":"Hiç faydasını görmedim."
+  },
+  {
+    "product":"Zerdeçal",
+    "comment":"Mide rahatsızlığı yaptı."
+  },
+  {
+    "product":"Zencefil",
+    "comment":"Tekrar alırım."
+  },
+  {
+    "product":"Melatonin",
+    "comment":"Baş ağrısı yaptı."
+  }
 ]

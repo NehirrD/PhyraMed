@@ -85,6 +85,26 @@ def groq_answer(question: str, products: list[dict]) -> str:
 
     context = format_product_context(products)
 
+    if products:
+        user_prompt = (
+            f"Kullanıcı sorusu:\n{question}\n\n"
+            f"Ürün veritabanı:\n\n{context}\n\n"
+            "Yalnızca ürün veritabanındaki bilgileri kullanarak cevap ver.\n"
+            "Cevabın başına şu ifadeyi ekle:\n"
+            "Kaynak: Onaylanmış Bilgi\n\n"
+            f"Cevabın sonuna mutlaka şu uyarıyı ekle:\n{DISCLAIMER}"
+        )
+    else:
+        user_prompt = (
+            f"Kullanıcı sorusu:\n{question}\n\n"
+            "Bu konu ürün veritabanında bulunamadı.\n"
+            "Kendi genel bilgini kullanarak bilgilendirici bir cevap ver.\n"
+            "Eğer bilimsel kanıtlar sınırlıysa bunu belirt.\n\n"
+            "Cevabın başına şu ifadeyi ekle:\n"
+            "Kaynak: AI Yanıtı\n\n"
+            f"Cevabın sonuna mutlaka şu uyarıyı ekle:\n{DISCLAIMER}"
+        )
+
     try:
         response = client.chat.completions.create(
             model=TEXT_MODEL,
@@ -95,11 +115,7 @@ def groq_answer(question: str, products: list[dict]) -> str:
                 },
                 {
                     "role": "user",
-                    "content": (
-                        f"Kullanıcı sorusu:\n{question}\n\n"
-                        f"Ürün veritabanı:\n\n{context}\n\n"
-                        f"Cevabın sonuna mutlaka şu uyarıyı ekle:\n{DISCLAIMER}"
-                    ),
+                    "content": user_prompt,
                 },
             ],
             temperature=0.3,
@@ -111,7 +127,6 @@ def groq_answer(question: str, products: list[dict]) -> str:
     except AuthenticationError:
         print("Groq API anahtarı geçersiz. Şablon cevap kullanılıyor.")
         return template_answer(question, products)
-
 
 def ask(question: str, use_groq: bool) -> str:
     """Kullanıcı sorusunu cevaplar."""
