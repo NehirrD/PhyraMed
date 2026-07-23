@@ -43,7 +43,33 @@ function renderSkeletons(container, count, extraClass) {
 }
 window.PhyraMed.renderSkeletons = renderSkeletons;
 
-function navHTML(home, profil) {
+/**
+ * PO'nun içerik standardına göre (docs/product-management/
+ * evidence-classification.md, madde 5 ve 11): "Bekliyor" ve
+ * "Değerlendirilemedi" birer bilimsel kanıt seviyesi DEĞİL — bu yüzden
+ * Güçlü/Orta/Zayıf gibi renkli bir seviye rozeti olarak gösterilmemeli,
+ * nötr bir durum ifadesiyle sunulmalı. Rozet metnini tek yerden üretiyoruz
+ * ki her sayfa aynı kuralı uygulasın.
+ */
+function evidenceBadgeText(level) {
+  if (level === "Bekliyor") return "Değerlendiriliyor";
+  if (level === "Değerlendirilemedi") return "Değerlendirilemedi";
+  return level; // Güçlü / Orta / Zayıf
+}
+window.PhyraMed.evidenceBadgeText = evidenceBadgeText;
+
+/**
+ * Ürün detay sayfasında kanıt seviyesinin altında gösterilecek açıklama
+ * cümlesi — aynı dokümanın 11. maddesindeki örnek ifadelerle uyumlu.
+ */
+function evidenceStatusNote(level) {
+  if (level === "Bekliyor") return "Kanıt değerlendirmesi devam ediyor.";
+  if (level === "Değerlendirilemedi") return "Mevcut bilgilerle değerlendirme yapılamadı.";
+  return null;
+}
+window.PhyraMed.evidenceStatusNote = evidenceStatusNote;
+
+function navHTML(home, profil, tani) {
   return `
     <div class="navbar-inner">
       <a href="${home}" class="brand">
@@ -51,6 +77,7 @@ function navHTML(home, profil) {
         PhyraMed
       </a>
       <nav class="nav-links">
+        <a href="${tani}">Bitki Tanı</a>
         <a href="${profil}" class="nav-cta">Hesabım</a>
       </nav>
       <button class="menu-btn" aria-label="Menüyü aç" aria-expanded="false">
@@ -59,6 +86,7 @@ function navHTML(home, profil) {
     </div>
     <nav class="mobile-menu">
       <a href="${home}">Keşfet</a>
+      <a href="${tani}">Bitki Tanı</a>
       <a href="${profil}">Hesabım</a>
     </nav>
   `;
@@ -115,9 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function injectSharedMarkup() {
   const home = document.body.dataset.home || "index.html";
   const profil = document.body.dataset.profil || "pages/profil.html";
+  const tani = document.body.dataset.tani || "pages/gorsel-tanima.html";
 
   const header = document.querySelector(".navbar");
-  if (header) header.innerHTML = navHTML(home, profil);
+  if (header) header.innerHTML = navHTML(home, profil, tani);
 
   const footer = document.querySelector(".site-footer");
   if (footer) footer.innerHTML = FOOTER_HTML;

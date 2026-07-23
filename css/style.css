@@ -214,6 +214,7 @@ main.page { padding: 0 0 4rem; max-width: 74rem; margin: 0 auto; }
 .card.category { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; }
 .card.category svg { color: var(--forest-500); }
 .card.category span { font-size: 0.86rem; font-weight: 500; color: var(--forest-900); line-height: 1.3; }
+.card.category.active { border-color: var(--forest-500); background: var(--forest-100); box-shadow: var(--shadow-md); }
 
 .card.product { padding: 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; }
 .card-top { display: flex; justify-content: space-between; align-items: start; gap: 0.5rem; }
@@ -238,6 +239,10 @@ main.page { padding: 0 0 4rem; max-width: 74rem; margin: 0 auto; }
 .evidence-Güçlü { background: var(--evidence-strong-bg); color: var(--evidence-strong); }
 .evidence-Orta  { background: var(--evidence-middle-bg); color: var(--evidence-middle); }
 .evidence-Zayıf { background: var(--evidence-weak-bg); color: var(--evidence-weak); }
+/* Bekliyor / Değerlendirilemedi bilimsel kanıt seviyesi değildir (bkz.
+   evidence-classification.md madde 7) — bilinçli olarak nötr gri: */
+.evidence-Bekliyor, .evidence-Değerlendirilemedi { background: var(--paper-dim); color: var(--muted); }
+.evidence-Bekliyor::before, .evidence-Değerlendirilemedi::before { display: none; }
 
 /* ---------- İskelet (skeleton) yükleyici ----------
    Gerçek API'ye geçince veri gelene kadar boş ekran yerine bunlar görünür. */
@@ -320,6 +325,64 @@ main.page { padding: 0 0 4rem; max-width: 74rem; margin: 0 auto; }
 .history-item .query { font-size: 0.92rem; font-weight: 500; margin: 0; color: var(--ink); }
 .history-item .cat { font-size: 0.78rem; color: var(--muted); margin: 0.1rem 0 0; }
 .history-item .date { font-size: 0.78rem; color: var(--muted); font-family: var(--font-mono); flex-shrink: 0; }
+
+/* ---------- Görsel tanıma (SCRUM-37) ---------- */
+.recognize-page { max-width: 38rem; margin: 0 auto; padding: 2.5rem 1.5rem 3rem; }
+.recognize-page h1 { font-size: 1.5rem; color: var(--forest-900); }
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--forest-300);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.dropzone:hover, .dropzone.dragover { border-color: var(--forest-500); background: var(--forest-100); }
+.dropzone svg { color: var(--forest-500); margin-bottom: 0.75rem; }
+.dropzone .hint { font-size: 0.8rem; color: var(--muted); margin: 0.35rem 0 0; }
+.dropzone input[type="file"] { display: none; }
+
+.preview-wrap { margin-top: 1.25rem; text-align: center; }
+.preview-wrap img {
+  max-width: 100%; max-height: 20rem; border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md); object-fit: cover;
+}
+.preview-actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 1rem; }
+.btn-primary {
+  background: var(--forest-800); color: var(--paper); border: none; border-radius: 999px;
+  padding: 0.6rem 1.4rem; font-size: 0.88rem; font-weight: 500; cursor: pointer;
+  transition: background 0.15s ease;
+}
+.btn-primary:hover { background: var(--forest-900); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-ghost {
+  background: none; border: 1px solid var(--forest-100); color: var(--forest-700);
+  border-radius: 999px; padding: 0.6rem 1.4rem; font-size: 0.88rem; font-weight: 500; cursor: pointer;
+}
+.btn-ghost:hover { background: var(--forest-100); }
+
+.analyzing { display: flex; align-items: center; gap: 0.6rem; justify-content: center; margin-top: 1rem; color: var(--muted); font-size: 0.88rem; }
+.spinner {
+  width: 1.1rem; height: 1.1rem; border-radius: 999px;
+  border: 2px solid var(--forest-100); border-top-color: var(--forest-500);
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.result-card {
+  margin-top: 1.5rem; background: var(--surface); border: 1px solid var(--forest-100);
+  border-radius: var(--radius-card); padding: 1.4rem; box-shadow: var(--shadow-sm);
+}
+.result-card .confidence {
+  font-family: var(--font-mono); font-size: 0.76rem; color: var(--forest-500);
+  background: var(--forest-100); border-radius: 999px; padding: 0.2rem 0.65rem;
+}
 
 /* ---------- Footer ---------- */
 .site-footer {
