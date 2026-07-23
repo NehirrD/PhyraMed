@@ -6,6 +6,8 @@ import models
 import schemas
 from database import get_db
 from models import EvidenceLevel
+from fastapi import UploadFile, File
+from ai.identify import identify_image, IDENTIFY_DISCLAIMER
 
 router = APIRouter(
     prefix="/products",
@@ -88,6 +90,25 @@ async def delete_product(db: db_dependency, product_id:int):
     db.delete(product)
     db.commit()
 
-#!!!!
-#POST/PRODUCTS/IDENTIFY EKSİK - görsel tanıma AI modülüne bağlanacak endpoint AI modülünden sonra gelecek
-#iskelet kurulabilir.
+ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
+
+#Görsel tanıma - fotoğraftan ürün/bitki tahmini yapar:
+@router.post("/identify", status_code=status.HTTP_200_OK, response_model=schemas.IdentifyResponse)
+async def identify_product(file: UploadFile = File(...)):
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=400, detail="Sadece JPEG, PNG veya WEBP görsel yükleyebilirsiniz.")
+
+    image_bytes = await file.read()
+    if len(image_bytes) > MAX_IMAGE_SIZE:
+        raise HTTPException(status_code=400, detail="Görsel boyutu 5MB'ı geçemez.")
+
+    result = identify_image(image_bytes, mime_type=file.content_type)
+    return {
+        "identified_name": result["identified_name"],
+        "identified_name_en": result.get("identified_name_en"),
+        "confidence": result["confidence"],
+        "description": result["description"],
+        "matched_products": result["matched_products"],
+        "disclaimer": IDENTIFY_DISCLAIMER,
+    }

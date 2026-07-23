@@ -10,4 +10,4 @@ class Interaction(Base):
     interacts_with=Column(String,nullable=False)
     description=Column(Text)
 
-    product = relationship("Product", back_populates="interaction")
+    product = relationship("Product", back_populates="interactions")

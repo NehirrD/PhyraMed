@@ -28,4 +28,6 @@ class Product(Base):
 
     risks = relationship("Risk", back_populates="product")
     sources = relationship("Source", back_populates="product")
-    interaction=relationship("Interaction", back_populates="product")
+    interactions = relationship("Interaction", back_populates="product")
+    category = relationship("Category", back_populates="product")
+    comments = relationship("Comment", back_populates="product")
