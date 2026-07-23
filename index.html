@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PhyraMed — bitkisel takviyeler için bilimsel kanıt özeti, kanıt durumu ve risk bilgisiyle güvenilir öneriler." />
+  <title>PhyraMed — Kanıta Dayalı Bitkisel Takviye Rehberi</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2329442E' d='M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/data.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body data-home="index.html" data-profil="pages/profil.html" data-tani="pages/gorsel-tanima.html">
+
+  <!-- İçerik js/main.js tarafından enjekte ediliyor (bkz. navHTML) -->
+  <header class="navbar"></header>
+
+  <main class="page">
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">YZTA Bootcamp 2026 · Takım 137</span>
+        <h1>Bitkisel takviyeler hakkında,<br>kanıta dayalı gerçekler.</h1>
+        <p class="lede">
+          İhtiyacına göre kategori seç, her ürün için bilimsel kanıt özetini,
+          kanıt durumunu ve olası riskleri gör — yorumlara değil, kaynağa güven.
+        </p>
+        <div class="legend" aria-label="Kanıt seviyesi açıklaması">
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--evidence-strong)"></span>Güçlü kanıt</span>
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--evidence-middle)"></span>Orta kanıt</span>
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--evidence-weak)"></span>Zayıf kanıt</span>
+        </div>
+        <p style="margin-top:1.25rem;">
+          <a href="pages/gorsel-tanima.html" class="btn-primary" style="display:inline-flex;text-decoration:none;">
+            📷 Bir bitki fotoğrafı yükle
+          </a>
+        </p>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <!-- İmza görsel: yaprak + moleküler damar deseni -->
+        <svg viewBox="0 0 320 320" fill="none">
+          <path d="M160 26C110 78 74 122 74 176a86 86 0 0 0 172 0c0-54-36-98-86-150z"
+                fill="var(--forest-100)" stroke="var(--forest-300)" stroke-width="2"/>
+          <path d="M160 70v190" stroke="var(--forest-500)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M160 110l-38 26M160 110l38 26M160 160l-44 30M160 160l44 30M160 205l-30 24M160 205l30 24"
+                stroke="var(--forest-500)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="122" cy="136" r="7" fill="var(--evidence-strong)"/>
+          <circle cx="198" cy="136" r="7" fill="var(--evidence-middle)"/>
+          <circle cx="116" cy="190" r="7" fill="var(--evidence-middle)"/>
+          <circle cx="204" cy="190" r="7" fill="var(--evidence-strong)"/>
+          <circle cx="130" cy="229" r="6" fill="var(--evidence-weak)"/>
+          <circle cx="190" cy="229" r="6" fill="var(--evidence-strong)"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Kategoriler</h2>
+        <span class="hint">İhtiyacına en yakın olanı seç</span>
+      </div>
+      <div class="grid categories" id="category-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Öne çıkan öneriler</h2>
+        <span class="hint">Kanıt seviyesine göre etiketlenmiş</span>
+      </div>
+      <div class="grid products" id="product-grid"></div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <div class="chatbot-wrap"></div>
+
+  <script>
+    // data.js ve main.js "defer" ile <head>'te yüklendiği için parser
+    // burayı okuduğu an henüz çalışmamış olabilirler — DOMContentLoaded'ı
+    // bekleyerek her ikisinin de hazır olduğundan emin oluyoruz.
+    document.addEventListener("DOMContentLoaded", () => {
+      const catGrid = document.getElementById("category-grid");
+      const prodGrid = document.getElementById("product-grid");
+
+      // 1) Önce iskelet (skeleton) göster — gerçek API'de fetch() süresince
+      //    kullanıcı boş ekran değil, bu placeholder'ları görecek.
+      PhyraMed.renderSkeletons(catGrid, 6, "skeleton-category");
+      PhyraMed.renderSkeletons(prodGrid, 2, "skeleton-product");
+
+      // 2) "Veri geldi" simülasyonu. Backend hazır olunca bu setTimeout'u
+      //    kaldırıp yerine `await fetch(...)` koyman yeterli; akış aynı kalır.
+      setTimeout(renderContent, 400);
+
+      function renderContent() {
+        let activeCategory = null;
+
+        catGrid.innerHTML = "";
+        PhyraMed.CATEGORIES.forEach((c) => {
+          const btn = document.createElement("button");
+          btn.className = "card category";
+          btn.dataset.categoryId = c.id;
+          btn.innerHTML = `
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>
+            <span>${PhyraMed.escapeHTML(c.name)}</span>
+          `;
+          btn.addEventListener("click", () => {
+            // Aynı kategoriye tekrar tıklanırsa filtreyi kaldır (tümünü göster).
+            activeCategory = activeCategory === c.id ? null : c.id;
+            [...catGrid.children].forEach((el) =>
+              el.classList.toggle("active", Number(el.dataset.categoryId) === activeCategory)
+            );
+            renderProducts(activeCategory);
+          });
+          catGrid.appendChild(btn);
+        });
+
+        renderProducts(null);
+
+        function renderProducts(categoryId) {
+          const list = categoryId
+            ? PhyraMed.PRODUCTS.filter((p) => p.category_id === categoryId)
+            : PhyraMed.PRODUCTS;
+
+          prodGrid.innerHTML = "";
+
+          if (list.length === 0) {
+            prodGrid.innerHTML = `
+              <p style="grid-column:1/-1;color:var(--muted);font-size:0.9rem;">
+                Bu kategoride henüz ürün eklenmedi. Veri ekibi çalışmalarını sürdürüyor.
+              </p>
+            `;
+            return;
+          }
+
+          list.forEach((p) => {
+            const a = document.createElement("a");
+            a.className = "card product";
+            a.href = `pages/urun.html?id=${encodeURIComponent(p.id)}`;
+            a.innerHTML = `
+              <div class="card-top">
+                <h3>${PhyraMed.escapeHTML(p.name)}</h3>
+                <span class="evidence-badge evidence-${PhyraMed.escapeHTML(p.evidence_level)}">${PhyraMed.escapeHTML(PhyraMed.evidenceBadgeText(p.evidence_level))}</span>
+              </div>
+              <p class="desc">${PhyraMed.escapeHTML(p.usage_purpose)}</p>
+            `;
+            prodGrid.appendChild(a);
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>
