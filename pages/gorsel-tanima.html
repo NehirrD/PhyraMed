@@ -82,8 +82,21 @@
         if (file) handleFile(file);
       });
 
+      const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB — telefon fotoğrafları için yeterli, aşırı büyük dosyaları eler
+
       function handleFile(file) {
-        if (!file.type.startsWith("image/")) return;
+        clearError();
+
+        if (!file.type.startsWith("image/")) {
+          showError("Sadece fotoğraf dosyaları (JPEG, PNG, WEBP vb.) yüklenebilir.");
+          return;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          const mb = (file.size / (1024 * 1024)).toFixed(1);
+          showError(`Dosya çok büyük (${mb} MB). En fazla 8 MB boyutunda bir fotoğraf yükleyebilirsin.`);
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = () => {
           previewImg.src = reader.result;
@@ -92,6 +105,21 @@
           dropzone.style.display = "none";
         };
         reader.readAsDataURL(file);
+      }
+
+      function showError(message) {
+        let errorEl = document.getElementById("upload-error");
+        if (!errorEl) {
+          errorEl = document.createElement("p");
+          errorEl.id = "upload-error";
+          errorEl.style.cssText = "color:var(--evidence-weak);font-size:0.85rem;margin-top:0.75rem;";
+          dropzone.insertAdjacentElement("afterend", errorEl);
+        }
+        errorEl.textContent = message;
+      }
+
+      function clearError() {
+        document.getElementById("upload-error")?.remove();
       }
 
       analyzeBtn.addEventListener("click", () => {
@@ -115,6 +143,7 @@
         previewWrap.style.display = "none";
         dropzone.style.display = "block";
         resultWrap.innerHTML = "";
+        clearError();
       });
 
       function renderResult(result) {
