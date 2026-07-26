@@ -23,9 +23,9 @@ class ProductResponse(BaseModel):
     category_id:int
     category: Optional[CategoryResponse] = None
     usage_purpose: str
-    evidence_level:EvidenceLevel
+    evidence_level: Optional[EvidenceLevel] = None
     expert_opinion_summary:str
-    image_url:str
+    image_url: Optional[str] = None
     status:ProductStatus
     created_at:datetime
     updated_at:Optional[datetime]=None
