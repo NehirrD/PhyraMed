@@ -5,7 +5,7 @@ import re
 from database import get_db
 from models.product import Product
 from models.comment import Comment
-from ai.sentiment import analyze_product_comments
+from ai.sentiment import analyze_product_comments as analyze_comments_ai
 
 router = APIRouter(prefix="/analysis", tags=["Analysis"])
 
@@ -52,6 +52,6 @@ async def analyze_product_comments_deep(product_id: int, use_groq: bool = False,
         raise HTTPException(status_code=404, detail="Ürün bulunamadı")
 
     comments = db.query(Comment).filter(Comment.product_id == product_id).all()
-    result = analyze_product_comments(comments, use_groq=use_groq)
+    result = analyze_comments_ai(comments, use_groq=use_groq)
     result["product_name"] = product.name
     return result
