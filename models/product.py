@@ -14,10 +14,10 @@ class ProductStatus(str,enum.Enum):
     ai_generated="AI"
 
 class Product(Base):
-    __tablename__ = "products"
+    __tablename__ = "product"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.id"),nullable=False)
+    category_id = Column(Integer, ForeignKey("category.id"),nullable=False)
     usage_purpose=Column(Text)
     evidence_level=Column(Enum(EvidenceLevel))
     expert_opinion_summary=Column(Text)
@@ -26,3 +26,8 @@ class Product(Base):
     created_at=Column(DateTime(timezone=True), server_default=func.now())
     updated_at=Column(DateTime(timezone=True), onupdate=func.now())
 
+    risks = relationship("Risk", back_populates="product")
+    sources = relationship("Source", back_populates="product")
+    interactions = relationship("Interaction", back_populates="product")
+    category = relationship("Category", back_populates="product")
+    comments = relationship("Comment", back_populates="product")

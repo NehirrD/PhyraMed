@@ -14,3 +14,5 @@ class Risk(Base):
     product_id=Column(Integer,ForeignKey("product.id"),nullable=False)
     description=Column(Text,nullable=False)
     severity=Column(Enum(Severity),nullable=True)
+
+    product = relationship("Product", back_populates="risks")

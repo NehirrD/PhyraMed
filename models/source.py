@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
+
 from database import Base
 
 class Source(Base):
@@ -8,4 +9,6 @@ class Source(Base):
     product_id=Column(Integer, ForeignKey("product.id"),nullable=False)
     type=Column(String)
     url=Column(String)
-    title=Column(String,nullable=False)
+    title=Column(String,nullable=True)
+
+    product = relationship("Product", back_populates="sources")
