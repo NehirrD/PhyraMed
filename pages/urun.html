@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ürün Detayı — PhyraMed</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2329442E' d='M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/data.js" defer></script>
+  <script src="../js/main.js" defer></script>
+</head>
+<body data-home="../index.html" data-profil="profil.html" data-tani="gorsel-tanima.html">
+
+  <header class="navbar"></header>
+
+  <div class="product-header">
+    <a href="../index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Kategorilere dön
+    </a>
+    <div class="card-top" id="product-title-row"></div>
+    <p id="product-purpose" style="max-width:38rem;"></p>
+  </div>
+
+  <div class="product-layout">
+    <div id="product-main"></div>
+    <aside id="product-aside"></aside>
+  </div>
+
+  <footer class="site-footer"></footer>
+
+  <div class="chatbot-wrap"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const mainEl = document.getElementById("product-main");
+      const asideEl = document.getElementById("product-aside");
+
+      // İskelet göster, ardından (simüle edilmiş gecikmeyle) veriyi çöz.
+      PhyraMed.renderSkeletons(mainEl, 2, "skeleton-panel");
+      PhyraMed.renderSkeletons(asideEl, 1, "skeleton-panel");
+
+      setTimeout(() => {
+        const params = new URLSearchParams(location.search);
+        const id = Number(params.get("id"));
+        const product = PhyraMed.PRODUCTS.find((p) => p.id === id);
+
+        if (!product) {
+          renderNotFound();
+        } else {
+          renderProduct(product);
+        }
+      }, 350);
+
+      function renderNotFound() {
+        document.title = "Ürün bulunamadı — PhyraMed";
+        document.getElementById("product-title-row").innerHTML =
+          `<h1 style="font-size:1.5rem;color:var(--forest-900);">Ürün bulunamadı</h1>`;
+        document.getElementById("product-purpose").textContent =
+          "Aradığınız takviye veritabanımızda mevcut değil ya da kaldırılmış olabilir.";
+        mainEl.innerHTML = `
+          <section class="panel">
+            <p style="margin:0 0 1rem;">Kategorilerden birini seçerek mevcut önerilere göz atabilirsin.</p>
+            <a href="../index.html" class="nav-cta" style="display:inline-flex;">Kategorilere dön</a>
+          </section>
+        `;
+        asideEl.style.display = "none";
+      }
+
+      function renderProduct(product) {
+        const esc = PhyraMed.escapeHTML;
+        document.title = `${product.name} — PhyraMed`;
+
+        const statusNote = PhyraMed.evidenceStatusNote(product.evidence_level);
+
+        document.getElementById("product-title-row").innerHTML = `
+          <h1 style="font-size:1.7rem;color:var(--forest-900);">${esc(product.name)}</h1>
+          <span class="evidence-badge evidence-${esc(product.evidence_level)}">Kanıt durumu: ${esc(PhyraMed.evidenceBadgeText(product.evidence_level))}</span>
+        `;
+        document.getElementById("product-purpose").textContent = product.usage_purpose;
+
+        // PO içerik standardı (product-card-content-standard.md, madde 6):
+        // eksik alanlar boş bırakılmaz, bilgi yokluğu güvenlilik/etkililik
+        // sonucu gibi yorumlanmaz — her zaman açık bir durum cümlesi gösterilir.
+        const summaryText = product.expert_opinion_summary
+          ? esc(product.expert_opinion_summary)
+          : "Bilimsel kanıt özeti henüz hazırlanmadı.";
+
+        const statusNoteHTML = statusNote
+          ? `<p style="font-size:0.85rem;color:var(--muted);margin:0 0 0.75rem;font-style:italic;">${esc(statusNote)}</p>`
+          : "";
+
+        const risksHTML = product.risks.length
+          ? `<ul>${product.risks.map(r => `<li>${esc(r.description)} <span style="font-size:0.75rem;opacity:0.75;">(${esc(r.severity)} şiddet)</span></li>`).join("")}</ul>`
+          : `<p style="font-size:0.88rem;color:var(--muted);margin:0;">Bu kayıt için risk bilgisi henüz tamamlanmadı. Bilgi bulunmaması ürünün risksiz olduğu anlamına gelmez.</p>`;
+
+        const interactionsHTML = (product.interactions && product.interactions.length)
+          ? `<ul>${product.interactions.map(i => `<li><strong>${esc(i.interacts_with)}:</strong> ${esc(i.description)}</li>`).join("")}</ul>`
+          : `<p style="font-size:0.88rem;color:var(--muted);margin:0;">Bu kayıt için etkileşim bilgisi henüz tamamlanmadı. İlaç veya başka takviye kullanan kişilerin sağlık profesyoneline danışması gerekir.</p>`;
+
+        mainEl.innerHTML = `
+          <div class="disclaimer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+            <span><strong>Bilgilendirme amaçlıdır, tıbbi tavsiye değildir.</strong> Aşağıdaki bilgiler bilimsel kaynaklardan derlenmiştir; kullanmadan önce bir sağlık profesyoneline danışın.</span>
+          </div>
+          <section class="panel">
+            <h2>Bilimsel kanıt özeti</h2>
+            ${statusNoteHTML}
+            <p style="font-size:0.92rem;color:var(--muted);margin:0;">${summaryText}</p>
+          </section>
+          <section class="panel risk">
+            <h2>⚠ Riskler ve olası yan etkiler</h2>
+            ${risksHTML}
+          </section>
+          <section class="panel">
+            <h2>Etkileşimler ve önemli uyarılar</h2>
+            ${interactionsHTML}
+          </section>
+        `;
+
+        const sourcesHTML = product.sources.length
+          ? product.sources.map(s => `
+              <div class="source-row">
+                <span>${esc(s.title)}</span>
+                <span class="source-tag">${esc(s.type)}</span>
+              </div>
+            `).join("")
+          : `<p style="font-size:0.85rem;color:var(--muted);margin:0;">Bu kayıt için henüz kaynak eklenmedi; içerik doğrulanmış olarak etiketlenemez.</p>`;
+
+        asideEl.innerHTML = `
+          <section class="panel">
+            <h2>📚 Bilimsel ve resmî kaynaklar</h2>
+            ${sourcesHTML}
+          </section>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
