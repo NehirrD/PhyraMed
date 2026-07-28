@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
   <script src="../js/data.js" defer></script>
+  <script src="../js/api.js" defer></script>
   <script src="../js/main.js" defer></script>
 </head>
 <body data-home="../index.html" data-profil="profil.html" data-tani="gorsel-tanima.html">
@@ -64,6 +65,7 @@
       const resetBtn = document.getElementById("reset-btn");
       const analyzing = document.getElementById("analyzing");
       const resultWrap = document.getElementById("result-wrap");
+      let currentFile = null;
 
       // Sürükle-bırak desteği
       ["dragover", "dragenter"].forEach((evt) =>
@@ -99,6 +101,7 @@
 
         const reader = new FileReader();
         reader.onload = () => {
+          currentFile = file;
           previewImg.src = reader.result;
           previewWrap.style.display = "block";
           resultWrap.innerHTML = "";
@@ -122,24 +125,26 @@
         document.getElementById("upload-error")?.remove();
       }
 
-      analyzeBtn.addEventListener("click", () => {
+      analyzeBtn.addEventListener("click", async () => {
+        if (!currentFile) return;
         analyzing.style.display = "flex";
         analyzeBtn.disabled = true;
         resultWrap.innerHTML = "";
 
-        // NOT: Şu an sabit bir örnek sonuç gösteriyoruz. AI/Melike'nin görsel
-        // tanıma modeli hazır olunca burası gerçek bir API çağrısına
-        // (ör. POST /api/recognize, dönen alanlar RECOGNITION_DEMO ile aynı
-        // şekilde) bağlanacak, geri kalan render kodu değişmeyecek.
-        setTimeout(() => {
-          analyzing.style.display = "none";
-          analyzeBtn.disabled = false;
-          renderResult(PhyraMed.RECOGNITION_DEMO);
-        }, 1400);
+        // PhyraMed.identifyImage() gerçek /products/identify endpoint'ini
+        // dener; backend'e ulaşılamazsa (CORS/ağ hatası) otomatik olarak
+        // RECOGNITION_DEMO'ya döner — bu yüzden burada ayrıca try/catch veya
+        // setTimeout simülasyonu yapmıyoruz, api.js zaten hallediyor.
+        const result = await PhyraMed.identifyImage(currentFile);
+
+        analyzing.style.display = "none";
+        analyzeBtn.disabled = false;
+        renderResult(result);
       });
 
       resetBtn.addEventListener("click", () => {
         input.value = "";
+        currentFile = null;
         previewWrap.style.display = "none";
         dropzone.style.display = "block";
         resultWrap.innerHTML = "";
@@ -148,14 +153,25 @@
 
       function renderResult(result) {
         const esc = PhyraMed.escapeHTML;
+
+        // Gerçek API'de eşleşen ürün(ler) matched_products dizisinde gelir;
+        // mock modda ise tek bir related_product_id kullanıyoruz. İkisini de
+        // destekliyoruz ki API bağlansın ya da bağlanmasın link çalışsın.
+        const firstMatch = result.matched_products?.[0];
+        const linkedProductId = firstMatch ? firstMatch.id : result.related_product_id;
+        const linkHTML = linkedProductId
+          ? `<a href="urun.html?id=${encodeURIComponent(linkedProductId)}" class="btn-primary" style="display:inline-flex;text-decoration:none;">İlgili ürünü gör</a>`
+          : `<p style="font-size:0.85rem;color:var(--muted);margin:0;">Bu bitkiyle eşleşen bir ürün kaydı bulunamadı.</p>`;
+
         resultWrap.innerHTML = `
           <div class="result-card">
             <div class="card-top" style="margin-bottom:0.5rem;">
               <h3 style="margin:0;color:var(--forest-900);">${esc(result.name)}</h3>
-              <span class="confidence">%${esc(result.confidence)} eşleşme</span>
+              <span class="confidence">Güven: ${esc(result.confidence)}</span>
             </div>
             <p style="font-size:0.9rem;color:var(--muted);margin:0 0 1rem;">${esc(result.summary)}</p>
-            <a href="urun.html?id=${encodeURIComponent(result.related_product_id)}" class="btn-primary" style="display:inline-flex;text-decoration:none;">İlgili ürünü gör</a>
+            ${result.disclaimer ? `<p style="font-size:0.78rem;color:var(--muted);margin:0 0 1rem;font-style:italic;">${esc(result.disclaimer)}</p>` : ""}
+            ${linkHTML}
           </div>
         `;
       }

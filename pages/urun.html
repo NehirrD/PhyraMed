@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
   <script src="../js/data.js" defer></script>
+  <script src="../js/api.js" defer></script>
   <script src="../js/main.js" defer></script>
 </head>
 <body data-home="../index.html" data-profil="profil.html" data-tani="gorsel-tanima.html">
@@ -42,17 +43,17 @@
       PhyraMed.renderSkeletons(mainEl, 2, "skeleton-panel");
       PhyraMed.renderSkeletons(asideEl, 1, "skeleton-panel");
 
-      setTimeout(() => {
+      (async () => {
         const params = new URLSearchParams(location.search);
         const id = Number(params.get("id"));
-        const product = PhyraMed.PRODUCTS.find((p) => p.id === id);
+        const product = await PhyraMed.fetchProductDetail(id);
 
         if (!product) {
           renderNotFound();
         } else {
           renderProduct(product);
         }
-      }, 350);
+      })();
 
       function renderNotFound() {
         document.title = "Ürün bulunamadı — PhyraMed";
@@ -77,7 +78,7 @@
 
         document.getElementById("product-title-row").innerHTML = `
           <h1 style="font-size:1.7rem;color:var(--forest-900);">${esc(product.name)}</h1>
-          <span class="evidence-badge evidence-${esc(product.evidence_level)}">Kanıt durumu: ${esc(PhyraMed.evidenceBadgeText(product.evidence_level))}</span>
+          <span class="evidence-badge evidence-${esc(PhyraMed.evidenceClassName(product.evidence_level))}">Kanıt durumu: ${esc(PhyraMed.evidenceBadgeText(product.evidence_level))}</span>
         `;
         document.getElementById("product-purpose").textContent = product.usage_purpose;
 
@@ -92,8 +93,9 @@
           ? `<p style="font-size:0.85rem;color:var(--muted);margin:0 0 0.75rem;font-style:italic;">${esc(statusNote)}</p>`
           : "";
 
-        const risksHTML = product.risks.length
-          ? `<ul>${product.risks.map(r => `<li>${esc(r.description)} <span style="font-size:0.75rem;opacity:0.75;">(${esc(r.severity)} şiddet)</span></li>`).join("")}</ul>`
+        const risks = product.risks || [];
+        const risksHTML = risks.length
+          ? `<ul>${risks.map(r => `<li>${esc(r.description)} <span style="font-size:0.75rem;opacity:0.75;">(${esc(r.severity)} şiddet)</span></li>`).join("")}</ul>`
           : `<p style="font-size:0.88rem;color:var(--muted);margin:0;">Bu kayıt için risk bilgisi henüz tamamlanmadı. Bilgi bulunmaması ürünün risksiz olduğu anlamına gelmez.</p>`;
 
         const interactionsHTML = (product.interactions && product.interactions.length)
@@ -120,8 +122,9 @@
           </section>
         `;
 
-        const sourcesHTML = product.sources.length
-          ? product.sources.map(s => `
+        const sources = product.sources || [];
+        const sourcesHTML = sources.length
+          ? sources.map(s => `
               <div class="source-row">
                 <span>${esc(s.title)}</span>
                 <span class="source-tag">${esc(s.type)}</span>
