@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/data.js" defer></script>
+  <script src="js/api.js" defer></script>
   <script src="js/main.js" defer></script>
 </head>
 <body data-home="index.html" data-profil="pages/profil.html" data-tani="pages/gorsel-tanima.html">
@@ -87,20 +88,22 @@
       const catGrid = document.getElementById("category-grid");
       const prodGrid = document.getElementById("product-grid");
 
-      // 1) Önce iskelet (skeleton) göster — gerçek API'de fetch() süresince
-      //    kullanıcı boş ekran değil, bu placeholder'ları görecek.
+      // 1) Önce iskelet (skeleton) göster — fetch() süresince kullanıcı boş
+      //    ekran değil, bu placeholder'ları görecek.
       PhyraMed.renderSkeletons(catGrid, 6, "skeleton-category");
       PhyraMed.renderSkeletons(prodGrid, 2, "skeleton-product");
 
-      // 2) "Veri geldi" simülasyonu. Backend hazır olunca bu setTimeout'u
-      //    kaldırıp yerine `await fetch(...)` koyman yeterli; akış aynı kalır.
-      setTimeout(renderContent, 400);
+      // 2) Gerçek API'yi dene; ulaşılamazsa PhyraMed.fetchCategories/
+      //    fetchProducts (js/api.js) otomatik olarak mock veriye döner —
+      //    bu yüzden burada ayrıca try/catch veya setTimeout yok.
+      init();
 
-      function renderContent() {
+      async function init() {
+        const categories = await PhyraMed.fetchCategories();
         let activeCategory = null;
 
         catGrid.innerHTML = "";
-        PhyraMed.CATEGORIES.forEach((c) => {
+        categories.forEach((c) => {
           const btn = document.createElement("button");
           btn.className = "card category";
           btn.dataset.categoryId = c.id;
@@ -121,10 +124,9 @@
 
         renderProducts(null);
 
-        function renderProducts(categoryId) {
-          const list = categoryId
-            ? PhyraMed.PRODUCTS.filter((p) => p.category_id === categoryId)
-            : PhyraMed.PRODUCTS;
+        async function renderProducts(categoryId) {
+          PhyraMed.renderSkeletons(prodGrid, 2, "skeleton-product");
+          const list = await PhyraMed.fetchProducts(categoryId);
 
           prodGrid.innerHTML = "";
 
@@ -144,7 +146,7 @@
             a.innerHTML = `
               <div class="card-top">
                 <h3>${PhyraMed.escapeHTML(p.name)}</h3>
-                <span class="evidence-badge evidence-${PhyraMed.escapeHTML(p.evidence_level)}">${PhyraMed.escapeHTML(PhyraMed.evidenceBadgeText(p.evidence_level))}</span>
+                <span class="evidence-badge evidence-${PhyraMed.escapeHTML(PhyraMed.evidenceClassName(p.evidence_level))}">${PhyraMed.escapeHTML(PhyraMed.evidenceBadgeText(p.evidence_level))}</span>
               </div>
               <p class="desc">${PhyraMed.escapeHTML(p.usage_purpose)}</p>
             `;
