@@ -1,11 +1,6 @@
 # PhyraMed Frontend
 
-Build aracı veya framework kullanılmamıştır; proje düz HTML/CSS/JS ile
-geliştirilmiştir.
-
-## Çalıştırma
-
-Kurulum gerekmez. `index.html` dosyası tarayıcıda açılarak çalıştırılabilir.
+Framework ya da build aracı yok. Düz HTML/CSS/JS — çift tıkla `index.html`'i aç, çalışır.
 
 ## Klasör yapısı
 
@@ -13,104 +8,69 @@ Kurulum gerekmez. `index.html` dosyası tarayıcıda açılarak çalıştırıla
 index.html            Anasayfa
 pages/
   urun.html            Ürün detay sayfası (?id= parametresiyle çalışır)
-  profil.html          Profil ve geçmiş aramalar sayfası
-  gorsel-tanima.html   Bitki fotoğrafı yükleme ve tanıma sonucu sayfası
+  profil.html          Profil ve geçmiş aramalar
+  gorsel-tanima.html   Bitki fotoğrafı yükleme / tanıma sonucu
 css/style.css          Tasarım sistemi
 js/
-  data.js              Mock veri (backend modelleriyle uyumlu)
-  api.js               Gerçek backend entegrasyonu (mock'a otomatik fallback)
-  main.js              Ortak bileşenler ve arayüz mantığı
+  data.js              Mock veri
+  api.js               Backend entegrasyonu, bağlanamazsa mock'a döner
+  main.js              Navbar/footer/chatbot ve ortak yardımcılar
 ```
 
-## Teknik notlar
+## Birkaç teknik not
 
-- Navbar, footer ve chatbot bileşenleri `js/main.js` üzerinden tüm
-  sayfalara enjekte edilir; tekrar eden HTML bulunmaz.
-- Veri alanları backend'deki `models/*.py` yapısıyla birebir uyumludur.
-  API entegrasyonunda `js/data.js` içindeki mock veriler `fetch()`
-  çağrılarıyla değiştirilir, sayfa tarafında ek değişiklik gerekmez.
-- Kullanıcıdan/veritabanından gelen tüm metin alanları `escapeHTML()`
-  ile işlenir.
-- Veri yüklenirken iskelet (skeleton) bileşenleri gösterilir.
-- Script'ler `defer` ile yüklenir; tek bir `PhyraMed` nesnesi altında
-  toplanır.
+Navbar, footer ve chatbot her sayfaya `js/main.js` üzerinden enjekte ediliyor, yani HTML tekrarı yok — bir yeri değiştirince hepsi güncelleniyor.
 
-## Sorumluluk reddi
+Veri alanları backend'deki `models/*.py` ile aynı isimlerle tutuldu, böylece `js/data.js`'teki mock verinin yerine `fetch()` geçince sayfa tarafında neredeyse hiçbir şey değişmiyor.
 
-Platformun tıbbi teşhis/tedavi amacı taşımadığı bilgisi footer'da,
-ürün detay sayfasında ve chatbot'un ilk mesajında belirtilmiştir.
+Kullanıcıdan/veritabanından gelen metinler `escapeHTML()`'den geçiriliyor, direkt `innerHTML`'e basılmıyor. Veri yüklenirken de boş ekran yerine iskelet (skeleton) gösteriliyor. Scriptler `defer` ile yükleniyor ve hepsi tek bir `PhyraMed` nesnesi altında toplanıyor, global scope'u kirletmesin diye.
 
-## Görev karşılıkları
+Tıbbi teşhis/tedavi amacı taşımadığımıza dair uyarı footer'da, ürün detay sayfasında ve chatbot'un ilk mesajında var.
+
+## Hangi görev nerede
 
 | Görev | Konum |
 |---|---|
-| SCRUM-14: Frontend iskeleti | tüm proje |
-| SCRUM-15: Ürün detay sayfası taslağı | `pages/urun.html` |
-| SCRUM-16: Ortak tasarım sistemi | `css/style.css` |
-| SCRUM-17: Routing/sayfa geçişleri | `pages/` klasörü, navbar |
-| SCRUM-18: Ana sayfa wireframe'i | `index.html` |
-| SCRUM-35/53: Chatbot arayüzü ve animasyonu | `js/main.js` → `initChatbot()` |
-| SCRUM-36: Ürün detay sayfası (tüm alanlar) | `pages/urun.html` |
-| SCRUM-37: Görsel yükleme arayüzü | `pages/gorsel-tanima.html` |
-| SCRUM-54: UI/UX cilalama | `css/style.css` |
+| SCRUM-14 – Frontend iskeleti | tüm proje |
+| SCRUM-15 – Ürün detay taslağı | `pages/urun.html` |
+| SCRUM-16 – Tasarım sistemi | `css/style.css` |
+| SCRUM-17 – Routing | `pages/` klasörü, navbar |
+| SCRUM-18 – Ana sayfa wireframe | `index.html` |
+| SCRUM-35/53 – Chatbot + animasyon | `js/main.js` → `initChatbot()` |
+| SCRUM-36 – Ürün detay (tüm alanlar) | `pages/urun.html` |
+| SCRUM-37 – Görsel yükleme | `pages/gorsel-tanima.html` |
+| SCRUM-54 – UI/UX cilalama | `css/style.css` |
 | Profil + geçmiş aramalar | `pages/profil.html` |
 
-## PO içerik standardıyla uyum
+## PO'nun içerik standardına uyum
 
-GitHub'daki `docs/product-management/` altında PO tarafından yayımlanan iki
-doküman (`evidence-classification.md`, `product-card-content-standard.md`)
-bazı terminoloji ve davranış kuralları tanımlıyor; bu sürümde uygulandı:
+PO, `docs/product-management/` altına iki doküman koydu (`evidence-classification.md`, `product-card-content-standard.md`) ve bazı terminoloji/davranış kuralları belirledi. Buna göre değiştirdiklerimiz:
 
-- Ürün detayında "Uzman/doktor görüşü özeti" başlığı kaldırıldı, yerine
-  bağlayıcı terim olan **"Bilimsel kanıt özeti"** kullanıldı.
-- `evidence_level` sadece Güçlü/Orta/Zayıf değil, **Bekliyor** ve
-  **Değerlendirilemedi** durumlarını da alabiliyor; bunlar birer kanıt
-  seviyesi olmadığı için renkli rozet yerine nötr gri bir durum ifadesiyle
-  gösteriliyor (`js/main.js` → `evidenceBadgeText()`, `evidenceStatusNote()`).
-  Gerçek MVP veri setindeki 18 kaydın tamamı şu an "Bekliyor" durumunda,
-  mock veriye bunu örnekleyen bir kayıt eklendi (id: 103).
-- Risk, etkileşim ve kaynak bilgisi eksik olduğunda alan boş bırakılmıyor;
-  standartta tanımlanan durum cümleleri gösteriliyor (ör. "Bilgi bulunmaması
-  ürünün risksiz olduğu anlamına gelmez").
-- Kategori adı ve açıklamaları `data/phyramed_mvp_seed_dataset_v1.xlsx`
-  (Categories sekmesi) ile birebir eşleştirildi.
+"Uzman/doktor görüşü özeti" başlığı gitti, yerine "Bilimsel kanıt özeti" geldi — PO'nun istediği terim bu.
 
-**Açık nokta:** Backend modelindeki (`models/product.py`) alan adı hâlâ
-`expert_opinion_summary`; PO dokümanı bunun `evidence_summary` anlamıyla
-yeniden eşleştirilmesi gerektiğini belirtiyor (SCRUM-30 kapsamında). Bu,
-backend/veri ekibinin kararı — frontend tarafında sadece ekrandaki başlık
-güncellendi, veri alanı adı değişmedi.
+`evidence_level` artık sadece Güçlü/Orta/Zayıf değil; "Bekliyor" ve "Değerlendirilemedi" de gelebiliyor. Bunlar kanıt seviyesi sayılmadığı için renkli rozet yerine nötr gri bir ifadeyle gösteriliyor (bkz. `evidenceBadgeText()` / `evidenceStatusNote()` — `js/main.js`). Gerçek MVP veri setindeki 18 kaydın hepsi şu an zaten "Bekliyor" durumunda, mock veriye de bunu gösteren bir kayıt ekledik (id: 103).
+
+Risk, etkileşim ya da kaynak bilgisi eksikse alanı boş bırakmıyoruz — standarttaki durum cümlelerini gösteriyoruz ("bilgi bulunmaması ürünün risksiz olduğu anlamına gelmez" gibi).
+
+Kategori isim/açıklamaları `data/phyramed_mvp_seed_dataset_v1.xlsx`'teki Categories sekmesiyle birebir aynı.
+
+Açık kalan bir konu var: backend'deki alan hâlâ `expert_opinion_summary` ismini taşıyor, PO'nun dokümanına göre bunun `evidence_summary` olarak yeniden adlandırılması gerekiyor (SCRUM-30). Bu backend/veri ekibinin kararı, biz sadece ekrandaki başlığı değiştirdik, alan adına dokunmadık.
 
 ## Backend entegrasyonu
 
-Backend'de artık gerçek endpoint'ler var (`backend/dev3-nehir`,
-`backend/dev4-alper` branch'leri — henüz `develop`'a merge edilmedi):
-`/category`, `/products`, `/products/identify`, `/chat`,
-`/analysis/comments/{id}`. Bunlara bağlanan katman `js/api.js`.
+Backend'de artık gerçek endpoint'ler var — `backend/dev3-nehir` ve `backend/dev4-alper` branch'lerinde, `develop`'a henüz merge edilmedi: `/category`, `/products`, `/products/identify`, `/chat`, `/analysis/comments/{id}`.
 
-**Nasıl çalışıyor:** `js/api.js` içindeki her fonksiyon (`fetchCategories`,
-`fetchProducts`, `fetchProductDetail`, `sendChatMessage`, `identifyImage`)
-önce gerçek API'yi dener; backend'e ulaşılamazsa (kapalı, CORS engeli, ağ
-hatası) otomatik olarak mock veriye düşer. Yani bu dosya bağlansın ya da
-bağlanmasın site her zaman çalışır — demo API çökse bile bozulmaz.
+Bunlara bağlanan yer `js/api.js`. İçindeki `fetchCategories`, `fetchProducts`, `fetchProductDetail`, `sendChatMessage`, `identifyImage` fonksiyonlarının hepsi aynı mantıkla çalışıyor: önce gerçek API'yi dener, olmazsa (backend kapalı, CORS engeli, ağ sorunu, ne olursa) sessizce mock veriye döner. Yani bu dosya bağlansın bağlanmasın site çalışmaya devam ediyor.
 
-**Backend adresini ayarlamak için:** `js/api.js`'in en üstündeki
-`window.PhyraMed.API_BASE_URL` değerini kendi ortamına göre değiştir
-(varsayılan: `http://localhost:8000`).
+Backend adresini değiştirmek istersen `js/api.js`'in en üstündeki `API_BASE_URL`'i güncelle (şu an `http://localhost:8000`).
 
+Test ettim, backend'i lokalde ayağa kaldırıp gerçek veriyle denedim — çalışıyor. Tek eksik: backend'de CORS ayarı yok, main.py'ye `CORSMiddleware` eklenmesi lazım, yoksa tarayıcı gerçek API'yi engelleyip otomatik mock'a düşecek.
 
-### Bilinen veri şekli farkları (mock ↔ gerçek API)
+Mock ile gerçek API arasında birkaç küçük fark var, aklında olsun:
 
-- `evidence_level`: gerçek API'de enum sadece Güçlü/Orta/Zayıf tanıyor,
-  "Bekliyor"/"Değerlendirilemedi" henüz backend'e eklenmedi (SCRUM-30 hâlâ
-  açık). Alan `null` da gelebilir; frontend bunu nötr "Değerlendiriliyor"
-  durumu olarak gösteriyor (`evidenceClassName()`/`evidenceBadgeText()`
-  null-safe yazıldı).
-- `/products/identify`'nin döndürdüğü `confidence` alanı yüzde değil,
-  "yüksek/orta/düşük" gibi bir METİN — mock veri buna göre güncellendi.
-- Kategori nesnesinde artık `search_count` alanı var (popülerlik takibi);
-  frontend şu an bunu kullanmıyor ama ileride "popüler kategoriler"
-  gösterimi için `/category/popular` endpoint'i hazır.
+- `evidence_level` gerçek API'de sadece Güçlü/Orta/Zayıf — "Bekliyor"/"Değerlendirilemedi" henüz backend'de yok (SCRUM-30 açık). `null` da gelebilir, ona göre null-safe yazdık.
+- `/products/identify`'nin `confidence` alanı yüzde değil, "yüksek/orta/düşük" gibi bir metin.
+- Kategori nesnesinde artık `search_count` var (popülerlik takibi), şu an kullanmıyoruz ama `/category/popular` hazır bekliyor.
 
 ## Git akışı
 
