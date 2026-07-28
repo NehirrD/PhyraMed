@@ -123,9 +123,13 @@ window.PhyraMed.SEARCH_HISTORY = [
 // görsel analiz endpoint'inin döneceği gerçek yanıtla değiştirilecek —
 // alan adları (name, confidence, category, summary, related_product_id)
 // o yanıtla uyumlu olacak şekilde seçildi.
+// GÜNCELLEME: gerçek /products/identify endpoint'i confidence alanını yüzde
+// olarak değil "yüksek/orta/düşük" gibi bir METİN olarak dönüyor (bkz.
+// ai/identify.py, backend/dev3-nehir branch'i) — mock veriyi buna göre
+// düzelttik ki entegrasyon sırasında sürpriz olmasın.
 window.PhyraMed.RECOGNITION_DEMO = {
   name: "Ispanak (Spinacia oleracea)",
-  confidence: 92,
+  confidence: "yüksek",
   category: "Bağışıklık Desteği",
   summary:
     "Demir ve C vitamini açısından zengin, yapraklı bir sebzedir. Demir eksikliğine bağlı yorgunlukla mücadelede destekleyici olarak tüketilebilir.",

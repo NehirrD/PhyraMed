@@ -52,6 +52,7 @@ window.PhyraMed.renderSkeletons = renderSkeletons;
  * ki her sayfa aynı kuralı uygulasın.
  */
 function evidenceBadgeText(level) {
+  if (!level) return "Değerlendiriliyor"; // gerçek API'de evidence_level null gelebilir
   if (level === "Bekliyor") return "Değerlendiriliyor";
   if (level === "Değerlendirilemedi") return "Değerlendirilemedi";
   return level; // Güçlü / Orta / Zayıf
@@ -59,10 +60,20 @@ function evidenceBadgeText(level) {
 window.PhyraMed.evidenceBadgeText = evidenceBadgeText;
 
 /**
+ * evidence-${...} CSS sınıfı için güvenli bir anahtar üretir — null/eksik
+ * değerleri de "Bekliyor" görünümüne (nötr gri) düşürür.
+ */
+function evidenceClassName(level) {
+  return level || "Bekliyor";
+}
+window.PhyraMed.evidenceClassName = evidenceClassName;
+
+/**
  * Ürün detay sayfasında kanıt seviyesinin altında gösterilecek açıklama
  * cümlesi — aynı dokümanın 11. maddesindeki örnek ifadelerle uyumlu.
  */
 function evidenceStatusNote(level) {
+  if (!level) return "Kanıt değerlendirmesi devam ediyor.";
   if (level === "Bekliyor") return "Kanıt değerlendirmesi devam ediyor.";
   if (level === "Değerlendirilemedi") return "Mevcut bilgilerle değerlendirme yapılamadı.";
   return null;
@@ -225,16 +236,17 @@ function initChatbot() {
     input.value = "";
   });
 
-  function send(text) {
+  async function send(text) {
     if (!text || !text.trim()) return;
     addBubble("user", text);
     setMood("talking");
-    // NOT: Burası ileride gerçek chatbot API'sine (ai/dev5-melike branch'i) bağlanacak.
-    setTimeout(() => {
-      addBubble("bot", "Bu konudaki bilimsel kanıt özetini hazırlıyorum, birazdan gerçek API'ye bağlanacağım 🙂");
-      setMood("happy");
-      setTimeout(() => setMood("idle"), 1200);
-    }, 700);
+    // PhyraMed.sendChatMessage() gerçek /chat/ endpoint'ini dener (bkz.
+    // js/api.js); backend'e ulaşılamazsa otomatik olarak sabit bir yanıt
+    // döner, bu yüzden burada ayrı bir mock/fallback mantığı yok.
+    const reply = await window.PhyraMed.sendChatMessage(text);
+    addBubble("bot", reply);
+    setMood("happy");
+    setTimeout(() => setMood("idle"), 1200);
   }
 
   function addBubble(from, text) {
