@@ -98,23 +98,6 @@ bağlanmasın site her zaman çalışır — demo API çökse bile bozulmaz.
 `window.PhyraMed.API_BASE_URL` değerini kendi ortamına göre değiştir
 (varsayılan: `http://localhost:8000`).
 
-### ⚠️ Backend ekibinin çözmesi gereken blocker: CORS
-
-Backend'de (`main.py`) CORS ayarı henüz yok. Tarayıcıdan `fetch()` çağrısı
-yapınca "blocked by CORS policy" hatası alman muhtemel — bu bizim
-tarafımızda düzeltilebilecek bir şey değil. Nehir/Alper'e şu kodu
-`main.py`'ye eklemelerini ilet:
-
-```python
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # geliştirme aşamasında; production'da spesifik domain(ler) yazılmalı
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
 
 ### Bilinen veri şekli farkları (mock ↔ gerçek API)
 
