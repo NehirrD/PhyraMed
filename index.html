@@ -79,80 +79,213 @@
 
   <div class="chatbot-wrap"></div>
 
-  <script>
-    // data.js ve main.js "defer" ile <head>'te yüklendiği için parser
-    // burayı okuduğu an henüz çalışmamış olabilirler — DOMContentLoaded'ı
-    // bekleyerek her ikisinin de hazır olduğundan emin oluyoruz.
-    document.addEventListener("DOMContentLoaded", () => {
-      const catGrid = document.getElementById("category-grid");
-      const prodGrid = document.getElementById("product-grid");
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const catGrid = document.getElementById("category-grid");
+    const prodGrid = document.getElementById("product-grid");
 
-      // 1) Önce iskelet (skeleton) göster — gerçek API'de fetch() süresince
-      //    kullanıcı boş ekran değil, bu placeholder'ları görecek.
-      PhyraMed.renderSkeletons(catGrid, 6, "skeleton-category");
-      PhyraMed.renderSkeletons(prodGrid, 2, "skeleton-product");
+    const API_BASE_URL =
+      PhyraMed.API_BASE_URL || "http://127.0.0.1:8000";
 
-      // 2) "Veri geldi" simülasyonu. Backend hazır olunca bu setTimeout'u
-      //    kaldırıp yerine `await fetch(...)` koyman yeterli; akış aynı kalır.
-      setTimeout(renderContent, 400);
+    const CATEGORY_ORDER = [
+      "Uyku ve Dinlenme",
+      "Stres ve Zihinsel İyi Oluş",
+      "Sindirim ve Bağırsak Sağlığı",
+      "Bağışıklık Desteği",
+      "Enerji ve Yorgunluk",
+      "Cilt, Saç ve Tırnak Desteği",
+    ];
 
-      function renderContent() {
-        let activeCategory = null;
+    let categories = [];
+    let products = [];
+    let activeCategory = null;
 
-        catGrid.innerHTML = "";
-        PhyraMed.CATEGORIES.forEach((c) => {
-          const btn = document.createElement("button");
-          btn.className = "card category";
-          btn.dataset.categoryId = c.id;
-          btn.innerHTML = `
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>
-            <span>${PhyraMed.escapeHTML(c.name)}</span>
-          `;
-          btn.addEventListener("click", () => {
-            // Aynı kategoriye tekrar tıklanırsa filtreyi kaldır (tümünü göster).
-            activeCategory = activeCategory === c.id ? null : c.id;
-            [...catGrid.children].forEach((el) =>
-              el.classList.toggle("active", Number(el.dataset.categoryId) === activeCategory)
+    PhyraMed.renderSkeletons(catGrid, 6, "skeleton-category");
+    PhyraMed.renderSkeletons(prodGrid, 6, "skeleton-product");
+
+    try {
+      const [categoryResponse, productResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/category/`),
+        fetch(`${API_BASE_URL}/products/`),
+      ]);
+
+      if (!categoryResponse.ok) {
+        throw new Error(
+          `Kategori isteği başarısız: ${categoryResponse.status}`
+        );
+      }
+
+      if (!productResponse.ok) {
+        throw new Error(
+          `Ürün isteği başarısız: ${productResponse.status}`
+        );
+      }
+
+      categories = await categoryResponse.json();
+      products = await productResponse.json();
+
+      categories.sort((a, b) => {
+        const aIndex = CATEGORY_ORDER.indexOf(a.name);
+        const bIndex = CATEGORY_ORDER.indexOf(b.name);
+
+        return aIndex - bIndex;
+      });
+
+      renderCategories();
+      renderProducts(null);
+    } catch (error) {
+      console.error("Ana sayfa verileri yüklenemedi:", error);
+      renderLoadError();
+    }
+
+    function renderCategories() {
+      catGrid.innerHTML = "";
+
+      categories.forEach((category) => {
+        const categoryDesign = PhyraMed.CATEGORIES.find(
+          (item) => item.name === category.name
+        );
+
+        const icon =
+          categoryDesign?.icon ||
+          '<path d="M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z"/>';
+
+        const button = document.createElement("button");
+
+        button.className = "card category";
+        button.dataset.categoryId = category.id;
+
+        button.innerHTML = `
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            ${icon}
+          </svg>
+
+          <span>
+            ${PhyraMed.escapeHTML(category.name)}
+          </span>
+        `;
+
+        button.addEventListener("click", () => {
+          activeCategory =
+            activeCategory === category.id
+              ? null
+              : category.id;
+
+          [...catGrid.children].forEach((element) => {
+            element.classList.toggle(
+              "active",
+              Number(element.dataset.categoryId) === activeCategory
             );
-            renderProducts(activeCategory);
           });
-          catGrid.appendChild(btn);
+
+          renderProducts(activeCategory);
         });
 
-        renderProducts(null);
+        catGrid.appendChild(button);
+      });
+    }
 
-        function renderProducts(categoryId) {
-          const list = categoryId
-            ? PhyraMed.PRODUCTS.filter((p) => p.category_id === categoryId)
-            : PhyraMed.PRODUCTS;
+    function renderProducts(categoryId) {
+      const filteredProducts = categoryId
+        ? products.filter(
+            (product) => product.category_id === categoryId
+          )
+        : products;
 
-          prodGrid.innerHTML = "";
+      prodGrid.innerHTML = "";
 
-          if (list.length === 0) {
-            prodGrid.innerHTML = `
-              <p style="grid-column:1/-1;color:var(--muted);font-size:0.9rem;">
-                Bu kategoride henüz ürün eklenmedi. Veri ekibi çalışmalarını sürdürüyor.
-              </p>
-            `;
-            return;
-          }
+      if (filteredProducts.length === 0) {
+        prodGrid.innerHTML = `
+          <p
+            style="
+              grid-column:1/-1;
+              color:var(--muted);
+              font-size:0.9rem;
+            "
+          >
+            Bu kategoride henüz kayıtlı ürün bulunmuyor.
+          </p>
+        `;
 
-          list.forEach((p) => {
-            const a = document.createElement("a");
-            a.className = "card product";
-            a.href = `pages/urun.html?id=${encodeURIComponent(p.id)}`;
-            a.innerHTML = `
-              <div class="card-top">
-                <h3>${PhyraMed.escapeHTML(p.name)}</h3>
-                <span class="evidence-badge evidence-${PhyraMed.escapeHTML(p.evidence_level)}">${PhyraMed.escapeHTML(PhyraMed.evidenceBadgeText(p.evidence_level))}</span>
-              </div>
-              <p class="desc">${PhyraMed.escapeHTML(p.usage_purpose)}</p>
-            `;
-            prodGrid.appendChild(a);
-          });
-        }
+        return;
       }
-    });
+
+      filteredProducts.forEach((product) => {
+        const evidenceLevel =
+          product.evidence_level || "Bekliyor";
+
+        const evidenceText =
+          PhyraMed.evidenceBadgeText(evidenceLevel);
+
+        const link = document.createElement("a");
+
+        link.className = "card product";
+        link.href =
+          `pages/urun.html?id=${encodeURIComponent(product.id)}`;
+
+        link.innerHTML = `
+          <div class="card-top">
+            <h3>
+              ${PhyraMed.escapeHTML(product.name)}
+            </h3>
+
+            <span
+              class="
+                evidence-badge
+                evidence-${PhyraMed.escapeHTML(evidenceLevel)}
+              "
+            >
+              ${PhyraMed.escapeHTML(evidenceText)}
+            </span>
+          </div>
+
+          <p class="desc">
+            ${PhyraMed.escapeHTML(
+              product.usage_purpose ||
+              "Kullanım amacı bilgisi henüz eklenmedi."
+            )}
+          </p>
+        `;
+
+        prodGrid.appendChild(link);
+      });
+    }
+
+    function renderLoadError() {
+      catGrid.innerHTML = `
+        <p
+          style="
+            grid-column:1/-1;
+            color:var(--evidence-weak);
+            font-size:0.9rem;
+          "
+        >
+          Kategoriler yüklenemedi. Backend bağlantısını kontrol edin.
+        </p>
+      `;
+
+      prodGrid.innerHTML = `
+        <p
+          style="
+            grid-column:1/-1;
+            color:var(--evidence-weak);
+            font-size:0.9rem;
+          "
+        >
+          Ürünler yüklenemedi. Lütfen daha sonra tekrar deneyin.
+        </p>
+      `;
+    }
+  });
   </script>
 </body>
 </html>
