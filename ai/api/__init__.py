@@ -1,0 +1,1 @@
+"""PhyraMed AI API paketi."""

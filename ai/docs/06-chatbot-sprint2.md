@@ -1,92 +1,83 @@
-# Sprint 2 — Chatbot Temel Sürüm
+# Sprint 2/3 — Chatbot (RAG + Hafıza)
 
-## Mimari (Sprint 1 kararı uygulandı)
+## Mimari (Sprint 3 — RAG uygulandı)
 
 ```text
-Kullanıcı sorusu
-      ↓
-Anahtar kelime arama (product_db.py)
-      ↓
+Kullanıcı sorusu + session_id
+        ↓
+Oturum hafızası (son 8 tur)
+        ↓
+Hibrit retrieval (ChromaDB + keyword)
+        ↓
 Ürün bulundu mu?
-     ├── Evet
-     │      ↓
-     │  İlgili ürün(ler) prompt'a eklenir
-     │      ↓
-     │  Groq doğal dil cevabı üretir
-     │      ↓
-     │  Kaynak: Onaylanmış Bilgi
-     │
-     └── Hayır
-            ↓
-      Groq genel bilgisini kullanır
-            ↓
-      Kaynak: AI Yanıtı
-            ↓
-Bilgilendirme + disclaimer
+     ├── Evet → Kaynak: verified_db
+     └── Hayır → Kaynak: ai_generated
+        ↓
+Groq / şablon yanıt + disclaimer
+        ↓
+Yapılandırılmış JSON yanıt
 ```
 
-**RAG yok** — MVP için mock JSON ürün veritabanı yeterlidir. Ürün sayısı arttığında, daha kapsamlı bir ürün veritabanına veya internet tabanlı bilgi kaynağına geçildiğinde RAG mimarisine geçilmesi planlanmaktadır.
+Detaylı mimari: [`07-rag-orchestration.md`](07-rag-orchestration.md)
 
 ## Ürün veritabanı
 
-`poc/data/products_db.json` — 5 örnek ürün (zencefil, spirulina, melisa, zerdeçal, nane).
+`poc/data/products_db.json` — 5 ürün: Melatonin, Magnezyum, Zencefil, Nane, Zerdeçal.
 
-Backend hazır olduğunda `product_db.py` içindeki `load_products()` fonksiyonu REST API çağrısına çevrilecek:
-
-```python
-# Gelecek: GET /api/products?search=...
-```
+Backend hazır olduğunda `product_db.py` içindeki `load_products()` REST API çağrısına çevrilecek.
 
 ## Kullanım
 
 ```powershell
-# İnteraktif (key gerekmez — şablon yanıt)
-python poc/chatbot.py
+# İndeks oluştur (ilk çalıştırmada)
+python poc/rag/indexer.py
 
-# Tek soru
-python poc/chatbot.py --question "Zencefil mide bulantısına iyi gelir mi?"
+# Tek soru — JSON çıktı
+python poc/chatbot.py --groq --json --question "Zencefil mide bulantısına iyi gelir mi?"
 
-# Groq ile doğal dil
-python poc/chatbot.py --groq --question "Demir eksikliği için ne önerirsiniz?"
+# İnteraktif çok turlu oturum
+python poc/chatbot.py --groq
+
+# Şablon modu (Groq key gerekmez)
+python poc/chatbot.py --question "Uyku için ne var?"
 ```
 
 ## Test soruları
 
 | Soru | Beklenen sonuç |
 |------|----------------|
-| "Zencefil mide bulantısına iyi gelir mi?" | Zencefil Kapsül (**Kaynak: Onaylanmış Bilgi**) |
-| "Uyku için ne var?" | Melisa Uyku Damlası (**Kaynak: Onaylanmış Bilgi**) |
-| "Demir eksikliği takviyesi" | Spirulina Demir Destek (**Kaynak: Onaylanmış Bilgi**) |
-| "Ashwagandha ne işe yarar?" | Ürün bulunamazsa Groq genel bilgisi (**Kaynak: AI Yanıtı**) |
+| "Zencefil mide bulantısına iyi gelir mi?" | Zencefil (**Kaynak: verified_db**) |
+| "Uyku için ne var?" | Melatonin (**Kaynak: verified_db**) |
+| "Kas krampları için ne önerirsiniz?" | Magnezyum (**Kaynak: verified_db**) |
+| "Ashwagandha ne işe yarar?" | Ürün bulunamaz (**Kaynak: ai_generated**) |
 
-## Backend entegrasyonu (öneri)
+## Backend entegrasyonu
 
 - Endpoint: `POST /api/chat`
-- Body: `{ "question": "..." }`
-- AI modülü önce `search_products` ile ürün veritabanında arama yapar.
-- Ürün bulunursa doğrulanmış ürün bilgileri kullanılarak cevap oluşturulur.
-- Ürün bulunamazsa Groq modelinin genel bilgisinden yararlanılarak cevap oluşturulur.
-- Yanıt örneği:
+- Body: `{ "question": "...", "session_id": null, "use_groq": true }`
+- Yanıt:
 
 ```json
 {
   "answer": "...",
   "source": "verified_db",
-  "sources": [
+  "sources": [{ "id": 3, "name": "Zencefil" }],
+  "retrieved_chunks": [
     {
-      "id": 1,
-      "name": "Zencefil Kapsül"
+      "chunk_id": "3:evidence_summary",
+      "product_id": 3,
+      "product_name": "Zencefil",
+      "field": "evidence_summary",
+      "score": 0.92,
+      "source": "semantic"
     }
-  ]
+  ],
+  "session_id": "uuid"
 }
 ```
 
-veya
+## REST API başlatma
 
-```json
-{
-  "answer": "...",
-  "source": "ai_generated",
-  "sources": []
-}
+```powershell
+uvicorn api.main:app --reload --app-dir .
 ```

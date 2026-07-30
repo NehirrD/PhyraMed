@@ -30,27 +30,25 @@ python poc/image_eval.py --prompt-v2  # iyileştirilmiş prompt
 
 Rapor: `poc/reports/image_eval_v1.json` veya `image_eval_v2.json`
 
-## Prompt ince ayarı (v2)
+## Prompt ince ayarı (v2 → v3)
 
-Sprint 1 serbest metin yerine yapılandırılmış format istenir:
+Sprint 3'te v3 prompt eklendi — zerdeçal/zencefil ayırım kuralları ve düşük güven fallback:
 
-```
-Bitki (TR): zencefil
-Bitki (EN): ginger
-Güven: yüksek
-Kısa not: ...
+```powershell
+python poc/image_eval.py --prompt-v3
+python poc/image_test.py poc/sample/turmeric.jpg --json
 ```
 
-Bu format parse edilebilirliği artırır; Sprint 3'te backend'e entegre edilebilir.
+v3 kuralları:
+- Zerdeçal: turuncu-sarı kesit rengi
+- Zencefil: daha açık sarı kesit
+- Emin değilse `Güven: düşük` + `Bitki (TR): Belirsiz`
 
-### Qwen thinking modu
-
-`qwen/qwen3.6-27b` varsayılan olarak dahili "thinking" blokları üretebilir. `groq_client.vision_completion()` içinde `reasoning_effort: none` ile kapatılır. Eski yanıtlarda thinking içeriği `extract_model_text()` ile ayıklanır.
-
-Değerlendirme, önce `Bitki (TR):` satırına bakarak tam eşleşme sayar; yalnızca not/metin içinde geçen alias'lar kısmi eşleşme sayılır.
+Görsel tanıma sonrası ürün eşleştirme: `vision.identify_and_lookup()`
 
 ## Sonraki adımlar
 
+- [x] 10+ görselde %80+ strict accuracy hedefi (v2: %80)
+- [x] Düşük güven durumunda "emin değilim" fallback (v3)
 - [ ] Backend'den gelen kullanıcı fotoğraflarıyla veri setini büyüt
-- [ ] 10+ görselde %80+ strict accuracy hedefi
-- [ ] Düşük güven durumunda "emin değilim" fallback
+- [ ] v3 prompt ile yeniden değerlendirme raporu (`image_eval_v3.json`)

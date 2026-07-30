@@ -9,7 +9,6 @@ tam/kısmi eşleşme ve genel doğruluk oranını raporlar.
 """
 
 import argparse
-import base64
 import json
 import re
 import sys
@@ -18,40 +17,14 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from groq_client import (
-    VISION_MODEL,
-    extract_model_text,
-    get_groq_client,
-    vision_completion,
-)
+from groq_client import VISION_MODEL, extract_model_text, get_groq_client
+from vision import identify_image
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 SAMPLE_DIR = Path(__file__).parent / "sample"
 DATASET_PATH = Path(__file__).parent / "dataset" / "image_labels.json"
 REPORT_DIR = Path(__file__).parent / "reports"
-
-MIME = {
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".png": "image/png",
-    ".webp": "image/webp",
-    ".gif": "image/gif",
-}
-
-PROMPT_V1 = (
-    "Bu görseldeki bitkiyi tanımla. Yanıtında bitkinin Türkçe adını açıkça yaz."
-)
-
-PROMPT_V2 = (
-    "Sen bir botanik tanıma asistanısın.\n"
-    "Görseldeki bitkiyi tanımla.\n"
-    "Yanıtı TAM olarak aşağıdaki formatta ver:\n\n"
-    "Bitki (TR): <Türkçe adı>\n"
-    "Bitki (EN): <İngilizce adı>\n"
-    "Güven: <yüksek/orta/düşük>\n"
-    "Kısa not: <1 cümle>"
-)
 
 
 def load_dataset():
@@ -125,34 +98,7 @@ def classify_prediction(response: str, item: dict):
     return "miss"
 
 
-def predict(client, image_path: Path, prompt: str):
-    mime = MIME.get(image_path.suffix.lower(), "image/jpeg")
-    b64 = base64.b64encode(image_path.read_bytes()).decode()
-
-    r = vision_completion(
-        client,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:{mime};base64,{b64}"
-                        },
-                    },
-                ],
-            }
-        ],
-        max_tokens=400,
-        temperature=0.1,
-    )
-
-    return r.choices[0].message.content or ""
-
-
-def run_evaluation(use_v2=False):
+def run_evaluation(prompt_version="v2"):
 
     client = get_groq_client()
 
@@ -160,15 +106,13 @@ def run_evaluation(use_v2=False):
         print("GROQ_API_KEY bulunamadı.")
         sys.exit(1)
 
-    prompt = PROMPT_V2 if use_v2 else PROMPT_V1
-
     dataset = load_dataset()
 
     results = []
 
     print("=== Görsel Tanıma Değerlendirmesi (Sprint 2) ===")
     print(f"Model: {VISION_MODEL}")
-    print(f"Prompt: {'v2' if use_v2 else 'v1'}")
+    print(f"Prompt: {prompt_version}")
     print(f"Veri seti: {len(dataset)} görsel\n")
 
     for item in dataset:
@@ -183,9 +127,9 @@ def run_evaluation(use_v2=False):
 
         try:
 
-            response = predict(client, img, prompt)
-
-            prediction = extract_model_text(response)
+            parsed = identify_image(img, prompt_version=prompt_version)
+            response = parsed["raw"]
+            prediction = parsed["raw"]
 
             match = classify_prediction(response, item)
 
@@ -240,7 +184,7 @@ def run_evaluation(use_v2=False):
 
     REPORT_DIR.mkdir(exist_ok=True)
 
-    report_file = REPORT_DIR / f"image_eval_{'v2' if use_v2 else 'v1'}.json"
+    report_file = REPORT_DIR / f"image_eval_{prompt_version}.json"
 
     report_file.write_text(
         json.dumps(report, ensure_ascii=False, indent=2),
@@ -269,12 +213,24 @@ def main():
     parser.add_argument(
         "--prompt-v2",
         action="store_true",
-        help="Yeni prompt kullan",
+        help="v2 prompt kullan (geriye uyumlu)",
+    )
+    parser.add_argument(
+        "--prompt-v3",
+        action="store_true",
+        help="v3 prompt — zerdeçal/zencefil ayirimi + dusuk guven",
     )
 
     args = parser.parse_args()
 
-    run_evaluation(args.prompt_v2)
+    if args.prompt_v3:
+        version = "v3"
+    elif args.prompt_v2:
+        version = "v2"
+    else:
+        version = "v2"
+
+    run_evaluation(version)
 
 
 if __name__ == "__main__":

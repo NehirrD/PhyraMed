@@ -1,6 +1,5 @@
 """
-Sprint 1 — basit yorum analizi.
-Key yoksa kelime listesi, key varsa Groq.
+Sprint 1 — basit yorum analizi (Sprint 3'te guncellendi).
 
     python sentiment_test.py
     python sentiment_test.py --groq
@@ -13,34 +12,30 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from groq_client import TEXT_MODEL, get_groq_client
+from sentiment_summary import classify_sentiment, load_comments
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-COMMENTS = json.loads((Path(__file__).parent / "sample_comments.json").read_text(encoding="utf-8"))
-
-POSITIVE = ["iyi", "harika", "fayda", "arttı", "tekrar alacağım", "onayladı", "alternatif"]
-NEGATIVE = ["faydasını görmedim", "para boşa", "bıraktım", "yan etki", "alerji", "yetersiz", "garip", "dikkatli"]
-
-
-def simple_sentiment(text: str) -> str:
-    t = text.lower()
-    p = sum(1 for w in POSITIVE if w in t)
-    n = sum(1 for w in NEGATIVE if w in t)
-    if p > n:
-        return "Olumlu"
-    if n > p:
-        return "Olumsuz"
-    return "Nötr"
+LABEL_MAP = {"positive": "Olumlu", "negative": "Olumsuz", "neutral": "Nötr"}
 
 
 def run_simple():
+    comments = load_comments()
     counts = {"Olumlu": 0, "Olumsuz": 0, "Nötr": 0}
-    print("=== Basit kelime yöntemi (Sprint 1) ===\n")
-    for i, c in enumerate(COMMENTS, 1):
-        label = simple_sentiment(c)
+
+    print("=== Basit kelime yontemi (Sprint 1) ===\n")
+    for i, item in enumerate(comments, 1):
+        label_key = classify_sentiment(item["comment"])
+        label = LABEL_MAP[label_key]
         counts[label] += 1
-        print(f"{i}. [{label}] {c[:70]}")
-    print(f"\nÖzet: Olumlu {counts['Olumlu']}, Olumsuz {counts['Olumsuz']}, Nötr {counts['Nötr']}")
+        product = item.get("product", "—")
+        text = item["comment"][:70]
+        print(f"{i}. [{label}] ({product}) {text}")
+
+    print(
+        f"\nOzet: Olumlu {counts['Olumlu']}, "
+        f"Olumsuz {counts['Olumsuz']}, Notr {counts['Nötr']}"
+    )
 
 
 def run_groq():
@@ -48,22 +43,31 @@ def run_groq():
 
     client = get_groq_client()
     if not client:
-        print("GROQ_API_KEY yok — basit yöntemi kullan: python sentiment_test.py")
-        print("Key ekle: ai/.env dosyasında GROQ_API_KEY=gsk_...")
+        print("GROQ_API_KEY yok — basit yontemi kullan: python sentiment_test.py")
         return
 
-    text = "\n".join(f"- {c}" for c in COMMENTS)
+    comments = load_comments()
+    text = "\n".join(
+        f"- [{item.get('product', '?')}] {item['comment']}"
+        for item in comments
+    )
+
     try:
         r = client.chat.completions.create(
             model=TEXT_MODEL,
-            messages=[{"role": "user", "content": f"Bu yorumları analiz et (Türkçe, kısa):\n{text}\n\n1) Her yorum sentiment 2) Dağılım 3) Kısa özet"}],
+            messages=[
+                {
+                    "role": "user",
+                    "content": (
+                        f"Bu yorumlari analiz et (Turkce, kisa):\n{text}\n\n"
+                        "1) Her yorum sentiment 2) Dagilim 3) Kisa ozet"
+                    ),
+                }
+            ],
             max_tokens=600,
         )
     except AuthenticationError:
-        print("Groq API key geçersiz (401). Kontrol et:")
-        print("  1. https://console.groq.com/keys adresinden yeni key kopyala")
-        print("  2. ai/.env içinde: GROQ_API_KEY=gsk_... (tırnak yok, boşluk yok)")
-        print("  3. Komutu ai/ klasöründen çalıştır: python poc/sentiment_test.py --groq")
+        print("Groq API key gecersiz.")
         return
 
     print(f"=== Groq ({TEXT_MODEL}) ===\n")

@@ -4,60 +4,49 @@ PhyraMed chatbot'u bitkisel ürünler hakkında **bilgilendirme** yapacak (tıbb
 
 ## İki seçenek
 
-### A) Basit prompt tabanlı
+### A) Basit prompt tabanlı (Sprint 1–2)
 - System prompt + ürün bilgisi metne eklenir.
-- Chatbot önce ürün veritabanında arama yapar.
-- Ürün bulunursa doğrulanmış ürün bilgileri kullanılarak cevap oluşturulur.
-- Ürün bulunamazsa Groq modelinin genel bilgisinden yararlanılarak bilgilendirici cevap verilir.
-- **Artı:** Hızlı, az kod, Sprint 1 MVP'ye uygun
-- **Eksi:** Ürün sayısı arttıkça yönetimi zorlaşır, canlı internet verisi kullanılmaz.
+- Anahtar kelime araması ile ürün bulunur.
 
-### B) RAG
-- Dokümanlar vektör DB'ye kaydedilir, soruya göre ilgili içerik çekilir.
-- **Artı:** Ölçeklenebilir, kaynak gösterilebilir.
-- **Eksi:** Daha fazla altyapı gerekir (embedding, vektör DB).
+### B) RAG (Sprint 3 — uygulandı)
+- Ürün alanları chunk'lara ayrılır, ChromaDB'ye indekslenir.
+- Hibrit retrieval: semantik + keyword.
+- Oturum hafızası ile çok turlu konuşma.
+- Orkestrasyon katmanı kaynak seçimi ve yanıt üretimini yönetir.
 
-## Sprint 1 kararı
+## Sprint 3 kararı
 
 | | Seçim |
 |---|-------|
-| **MVP (şimdi)** | Basit prompt tabanlı |
-| **İleride** | RAG'e geçiş |
+| **Retrieval** | ChromaDB + keyword hibrit |
+| **Hafıza** | In-memory session store (session_id) |
+| **Orkestrasyon** | `orchestrator.py` — retrieve → generate |
+| **API** | FastAPI `POST /api/chat` |
 
-**Gerekçe:** Az ürün, hızlı demo, backend entegrasyonu kolay. Ürün veritabanı büyüdüğünde veya internet araması eklendiğinde RAG mimarisine geçilmesi planlanmaktadır.
+Detay: [`07-rag-orchestration.md`](07-rag-orchestration.md)
 
-## Sprint 2 — uygulama
-
-Temel chatbot kuruldu. Çalışma mantığı:
+## Akış
 
 ```text
 Kullanıcı sorusu
       ↓
-Ürün veritabanında arama
+Session memory (önceki turlar)
+      ↓
+Hibrit RAG retrieval
       ↓
 Ürün bulundu mu?
-     ├── Evet
-     │      ↓
-     │  Ürün bilgileri prompt'a eklenir
-     │      ↓
-     │  Kaynak: Onaylanmış Bilgi
-     │
-     └── Hayır
-            ↓
-      Groq genel bilgisi kullanılır
-            ↓
-      Kaynak: AI Yanıtı
-            ↓
+     ├── Evet → Kaynak: Onaylanmış Bilgi (verified_db)
+     └── Hayır → Kaynak: AI Yanıtı (ai_generated)
+      ↓
 Bilgilendirme + disclaimer
 ```
 
-Detay: [`06-chatbot-sprint2.md`](06-chatbot-sprint2.md)
-
 ```powershell
-python poc/chatbot.py --question "Zencefil mide bulantısına iyi gelir mi?"
+python poc/rag/indexer.py
+python poc/chatbot.py --groq --json --question "Zencefil mide bulantısına iyi gelir mi?"
 ```
 
 ## Açık sorular (takımla netleştirilecek)
 
-- [ ] Backend ürün verisini REST API olarak verecek (`GET /api/products`)
+- [ ] Backend ürün verisini REST API olarak verecek (`GET /api/products`) — mock JSON geçici
 - [ ] Chatbot ürün önerecek mi, sadece bilgi mi verecek?
