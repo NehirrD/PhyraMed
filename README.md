@@ -40,3 +40,81 @@
 
 
 > **Not:** Bu platform tıbbi tavsiye sunmaz, yalnızca bilgilendirme amaçlıdır. Kullanıcılar herhangi bir sağlık kararı öncesinde doktorlarına danışmalıdır.
+
+---
+
+## Kurulum ve Çalıştırma
+
+### Gereksinimler
+
+- Python 3.9+
+- PostgreSQL (Supabase)
+- Groq API Key
+
+### Adımlar
+
+1. Depoyu klonlayın:
+```bash
+git clone https://github.com/NehirrD/PhyraMed.git
+cd PhyraMed
+```
+
+2. Gereksinimleri yükleyin:
+```bash
+pip install -r requirements.txt
+```
+
+3. Ortam değişkenlerini ayarlayın (.env dosyasını düzenleyin):
+```bash
+cp .env.example .env
+# .env dosyasına DATABASE_URL ve GROQ_API_KEY ekleyin
+```
+
+4. RAG indeksini oluşturun:
+```bash
+cd ai
+python -m poc.rag.indexer
+```
+
+5. Backend'i başlatın:
+```bash
+cd ..
+uvicorn main:app --reload
+```
+
+### API Endpoint'leri
+
+- `GET /` - API durumu
+- `GET /products` - Tüm ürünleri listele
+- `GET /products/{id}` - Ürün detayı
+- `POST /products` - Yeni ürün ekle
+- `POST /chat` - AI chatbot
+- `POST /products/identify` - Görsel tanıma
+- `GET /categories` - Kategoriler
+- `GET /risks` - Riskler
+- `GET /sources` - Kaynaklar
+- `GET /interactions` - Etkileşimler
+- `GET /comments` - Yorumlar
+
+### Proje Yapısı
+
+```
+PhyraMed/
+├── ai/                      # AI modülleri
+│   ├── poc/                # Proof of Concept kodları
+│   │   ├── rag/            # RAG sistemi
+│   │   ├── product_db.py   # Backend API entegrasyonu
+│   │   ├── chatbot.py      # Chatbot mantığı
+│   │   └── vision.py       # Görsel tanıma
+│   ├── identify.py         # Backend görsel tanıma
+│   └── chatbot.py          # Backend chatbot
+├── routers/                # FastAPI router'ları
+│   ├── product.py
+│   ├── chat.py
+│   ├── category.py
+│   └── ...
+├── models.py               # SQLAlchemy modelleri
+├── database.py             # Veritabanı bağlantısı
+├── schemas.py              # Pydantic şemaları
+└── main.py                 # Ana FastAPI uygulaması
+```

@@ -2,14 +2,18 @@
 
 import sys
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List,Optional
 
-POC_DIR = Path(__file__).resolve().parents[1]
+# Path manipülasyonu - script olarak çalıştırma için
+CURRENT_FILE = Path(__file__).resolve()
+POC_DIR = CURRENT_FILE.parents[1]  # ai/poc  
+
 if str(POC_DIR) not in sys.path:
     sys.path.insert(0, str(POC_DIR))
 
-from ..product_db import load_products
-from .store import get_collection
+# Local import - script olarak çalıştırma
+from product_db import load_products
+from rag.store import get_collection
 
 CHUNK_FIELDS = (
     "name",
@@ -50,19 +54,79 @@ def product_to_chunks(product: dict) -> List[dict]:
             }
         )
 
-    keywords = product.get("keywords") or []
-    if keywords:
+    # Category chunk
+    category_obj = product.get("category") or {}
+    if category_obj.get("name"):
         chunks.append(
             {
-                "id": f"{product['id']}:keywords",
+                "id": f"{product['id']}:category",
                 "text": (
                     f"Ürün: {product['name']}\n"
-                    f"Anahtar kelimeler: {', '.join(keywords)}"
+                    f"Kategori: {category_obj.get('name')}"
                 ),
                 "metadata": {
                     "product_id": product["id"],
                     "product_name": product["name"],
-                    "field": "keywords",
+                    "field": "category",
+                },
+            }
+        )
+
+    # Risks chunk
+    risks = product.get("risks") or []
+    if risks:
+        risk_texts = [f"{r.get('description')} (şiddet: {r.get('severity')})" for r in risks]
+        chunks.append(
+            {
+                "id": f"{product['id']}:risks",
+                "text": (
+                    f"Ürün: {product['name']}\n"
+                    f"Riskler: {', '.join(risk_texts)}"
+                ),
+                "metadata": {
+                    "product_id": product["id"],
+                    "product_name": product["name"],
+                    "field": "risks",
+                },
+            }
+        )
+
+    # Sources chunk
+    sources = product.get("sources") or []
+    if sources:
+        source_texts = [s.get("title") or s.get("url") for s in sources]
+        chunks.append(
+            {
+                "id": f"{product['id']}:sources",
+                "text": (
+                    f"Ürün: {product['name']}\n"
+                    f"Kaynaklar: {', '.join(source_texts)}"
+                ),
+                "metadata": {
+                    "product_id": product["id"],
+                    "product_name": product["name"],
+                    "field": "sources",
+                },
+            }
+        )
+
+    # Interactions chunk
+    interactions = product.get("interactions") or []
+    if interactions:
+        interaction_texts = [
+            f"{i.get('interacts_with')}: {i.get('description')}" for i in interactions
+        ]
+        chunks.append(
+            {
+                "id": f"{product['id']}:interactions",
+                "text": (
+                    f"Ürün: {product['name']}\n"
+                    f"Etkileşimler: {', '.join(interaction_texts)}"
+                ),
+                "metadata": {
+                    "product_id": product["id"],
+                    "product_name": product["name"],
+                    "field": "interactions",
                 },
             }
         )

@@ -31,7 +31,7 @@ PhyraMed'in yapay zeka bileşenleri bu klasörde geliştirilir: **bitki görsel 
 | Orkestrasyon | Tamamlandı | Retrieve → generate akışı (`orchestrator.py`) |
 | Görsel tanıma | İyileştirildi | v3 prompt, düşük güven fallback, ürün eşleştirme |
 | Yorum analizi | İyileştirildi | Ürün bazlı özet, negasyon handling |
-| REST API | Tamamlandı | FastAPI — chat, identify, review-summary |
+| Backend Entegrasyonu | Tamamlandı | AI modülü mevcut FastAPI backend'ine entegre edildi |
 
 ### Dokümanlar
 
@@ -60,7 +60,7 @@ PhyraMed'in yapay zeka bileşenleri bu klasörde geliştirilir: **bitki görsel 
 | `poc/sentiment_summary.py` | 2/3 | Standart JSON özet üretir |
 | `poc/product_db.py` | 2 | Ürün arama / bağlam |
 | `poc/groq_client.py` | 1 | Groq API istemcisi |
-| `api/main.py` | 3 | REST API sunucusu |
+
 
 ---
 
@@ -69,8 +69,9 @@ PhyraMed'in yapay zeka bileşenleri bu klasörde geliştirilir: **bitki görsel 
 ```powershell
 cd ai
 pip install -r requirements.txt
-python poc/rag/indexer.py
 ```
+
+> Vektör indeksi backend açılırken otomatik oluşturulur.
 
 Groq API kullanmak için (görsel tanıma, Groq chatbot, gelişmiş sentiment):
 
@@ -86,21 +87,22 @@ copy .env.example .env
 ## Çalıştırma
 
 ```powershell
-# --- Sprint 3: RAG Chatbot ---
-python poc/chatbot.py --groq --json --question "Zencefil mide bulantısına iyi gelir mi?"
+# Backend
+cd ..
+uvicorn main:app --reload
+
+# Chatbot
+cd ai
 python poc/chatbot.py --groq
 
-# --- REST API ---
-uvicorn api.main:app --reload --app-dir .
-
-# --- Görsel tanıma ---
-python poc/image_test.py poc/sample/ginger.jpg --json
+# Görsel tanıma
+python poc/image_test.py <image_path> --json
 python poc/image_eval.py --prompt-v3
 
-# --- Yorum analizi ---
+# Yorum analizi
 python poc/sentiment_summary.py --by-product
-python poc/sentiment_summary.py --product Zencefil --groq
 python poc/sentiment_test.py
+
 ```
 
 Fotoğraflar **20 MB altında** olmalı (Groq vision limiti).
@@ -120,18 +122,17 @@ python -m pytest tests/ -v
 
 ```
 ai/
-├── api/                     # FastAPI REST katmanı
 ├── docs/                    # Araştırma ve karar notları
 ├── tests/                   # Otomatik testler
 ├── poc/
 │   ├── rag/                 # RAG pipeline (indexer, retriever, store)
 │   ├── data/
-│   │   ├── products_db.json
-│   │   └── vector_store/    # ChromaDB (üretilir)
+│   │   ├── vector_store/    # ChromaDB (üretilir)
+│   │   
 │   ├── dataset/image_labels.json
 │   ├── reports/
-│   ├── sample/
-│   └── *.py
+│   ├── *.py
+│    
 ├── requirements.txt
 └── README.md
 ```
