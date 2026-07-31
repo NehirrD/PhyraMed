@@ -13,7 +13,7 @@
 // açılabilir tutmak için bu yöntemde kaldık.
 
 window.PhyraMed = window.PhyraMed || {};
-
+window.PhyraMed.API_BASE_URL = "http://127.0.0.1:8000";
 /**
  * Kullanıcıdan/veritabanından gelen metni innerHTML şablonlarına
  * güvenle basmak için kaçışlama (escaping) yardımcı fonksiyonu.
@@ -52,9 +52,9 @@ window.PhyraMed.renderSkeletons = renderSkeletons;
  * ki her sayfa aynı kuralı uygulasın.
  */
 function evidenceBadgeText(level) {
-  if (level === "Bekliyor") return "Değerlendiriliyor";
+  if (!level || level === "Bekliyor") return "Değerlendiriliyor";
   if (level === "Değerlendirilemedi") return "Değerlendirilemedi";
-  return level; // Güçlü / Orta / Zayıf
+  return level;
 }
 window.PhyraMed.evidenceBadgeText = evidenceBadgeText;
 
@@ -63,7 +63,7 @@ window.PhyraMed.evidenceBadgeText = evidenceBadgeText;
  * cümlesi — aynı dokümanın 11. maddesindeki örnek ifadelerle uyumlu.
  */
 function evidenceStatusNote(level) {
-  if (level === "Bekliyor") return "Kanıt değerlendirmesi devam ediyor.";
+  if (!level || level === "Bekliyor") return "Kanıt değerlendirmesi devam ediyor.";
   if (level === "Değerlendirilemedi") return "Mevcut bilgilerle değerlendirme yapılamadı.";
   return null;
 }
@@ -187,7 +187,7 @@ function initMobileMenu() {
 }
 
 const QUICK_REPLIES = [
-  "Demir eksikliğine ne önerirsin?",
+  "Demir hakkında hangi bilgiler bulunuyor?",
   "Bu bitkinin yan etkileri neler?",
   "Kanıt seviyesi ne demek?",
 ];
@@ -225,25 +225,118 @@ function initChatbot() {
     input.value = "";
   });
 
-  function send(text) {
-    if (!text || !text.trim()) return;
-    addBubble("user", text);
-    setMood("talking");
-    // NOT: Burası ileride gerçek chatbot API'sine (ai/dev5-melike branch'i) bağlanacak.
-    setTimeout(() => {
-      addBubble("bot", "Bu konudaki bilimsel kanıt özetini hazırlıyorum, birazdan gerçek API'ye bağlanacağım 🙂");
-      setMood("happy");
-      setTimeout(() => setMood("idle"), 1200);
-    }, 700);
+let isSending = false;
+
+async function send(text) {
+  const message = String(text ?? "").trim();
+
+  if (!message || isSending) {
+    return;
   }
 
-  function addBubble(from, text) {
-    const div = document.createElement("div");
-    div.className = `bubble ${from}`;
-    div.textContent = text;
-    body.appendChild(div);
-    body.scrollTop = body.scrollHeight;
+  isSending = true;
+
+  const submitButton = form.querySelector(
+    'button[type="submit"]'
+  );
+
+  addBubble("user", message);
+
+  const loadingBubble = addBubble(
+    "bot",
+    "Yanıt hazırlanıyor..."
+  );
+
+  setMood("talking");
+
+  input.disabled = true;
+
+  if (submitButton) {
+    submitButton.disabled = true;
   }
+
+  const controller = new AbortController();
+
+  const timeoutId = window.setTimeout(() => {
+    controller.abort();
+  }, 30000);
+
+  try {
+    const API_BASE_URL =
+      PhyraMed.API_BASE_URL ||
+      "http://127.0.0.1:8000";
+
+    const response = await fetch(
+      `${API_BASE_URL}/chat/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message,
+        }),
+        signal: controller.signal,
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      throw new Error(
+        `Chatbot isteği başarısız: ${response.status} ${errorText}`
+      );
+    }
+
+    const data = await response.json();
+
+    loadingBubble.textContent =
+      data.response ||
+      "Chatbot yanıtı alınamadı.";
+
+    setMood("happy");
+  } catch (error) {
+    console.error("Chatbot bağlantı hatası:", error);
+
+    if (error.name === "AbortError") {
+      loadingBubble.textContent =
+        "Yanıt süresi aşıldı. Lütfen tekrar deneyin.";
+    } else {
+      loadingBubble.textContent =
+        "Şu anda chatbot yanıtına ulaşılamıyor. Backend bağlantısını kontrol edin.";
+    }
+
+    setMood("idle");
+  } finally {
+    window.clearTimeout(timeoutId);
+
+    input.disabled = false;
+
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
+
+    input.focus();
+    body.scrollTop = body.scrollHeight;
+    isSending = false;
+
+    window.setTimeout(() => {
+      setMood("idle");
+    }, 1200);
+  }
+}
+
+function addBubble(from, text) {
+  const div = document.createElement("div");
+
+  div.className = `bubble ${from}`;
+  div.textContent = text;
+
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+
+  return div;
+}
 
   function setMood(mood) {
     mascotBtn.classList.remove("talking", "happy");

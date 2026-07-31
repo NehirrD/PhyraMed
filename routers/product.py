@@ -1,6 +1,6 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from starlette import status
 import models
 import schemas
@@ -15,6 +15,13 @@ router = APIRouter(
 )
 
 db_dependency = Annotated[Session,Depends(get_db)]
+def product_query(db: Session):
+    return db.query(models.Product).options(
+        selectinload(models.Product.category),
+        selectinload(models.Product.risks),
+        selectinload(models.Product.sources),
+        selectinload(models.Product.interactions),
+    )
 
 #Yeni ürün ekleme (bitki):
 @router.post("/", status_code=status.HTTP_201_CREATED,response_model=schemas.ProductResponse)
@@ -36,7 +43,7 @@ async def create_product(db:db_dependency,request:schemas.CreateProductRequest):
 #ürünler sekmesinde tüm ürünleri listeler, filtrelere göre sıralar - evidence level, kategori, A-Z filtreleri
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[schemas.ProductResponse])
 async def list_products(db: db_dependency,q: str = None,category_id: int = None,evidence_level: EvidenceLevel = None,sort_by: str = "name",order: str = "asc"):
-    query = db.query(models.Product)
+    query = product_query(db)
     if q:
         query = query.filter(models.Product.name.ilike(f"%{q}%"))
     if category_id:
@@ -58,7 +65,11 @@ async def list_products(db: db_dependency,q: str = None,category_id: int = None,
 #Seçilen ürün bilgisini döner:
 @router.get("/{product_id}",status_code=status.HTTP_200_OK,response_model=schemas.ProductResponse)
 async def get_product_info(db: db_dependency,product_id: int):
-    product=db.query(models.Product).filter(models.Product.id == product_id).first()
+    product = (
+    product_query(db)
+    .filter(models.Product.id == product_id)
+    .first()
+)
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Product not found")
     return product
