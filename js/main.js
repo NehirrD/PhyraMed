@@ -187,7 +187,7 @@ function initMobileMenu() {
 }
 
 const QUICK_REPLIES = [
-  "Demir eksikliğine ne önerirsin?",
+  "Demir hakkında hangi bilgiler bulunuyor?",
   "Bu bitkinin yan etkileri neler?",
   "Kanıt seviyesi ne demek?",
 ];

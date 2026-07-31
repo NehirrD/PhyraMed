@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ai.chatbot import get_bot_response
 
@@ -11,7 +11,10 @@ router = APIRouter(
 
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(
+        min_length=1,
+        max_length=1000,
+    )
 
 
 class ChatResponse(BaseModel):
