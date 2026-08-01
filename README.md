@@ -321,7 +321,8 @@ Ekip içi günlük iletişim, görev güncellemeleri ve karşılaşılan engelle
 
 ## Ürün Durumu: Ekran görüntüleri
 
-<img width="1865" height="960" alt="image" src="https://github.com/user-attachments/assets/cf0a5e81-23d3-4156-bf41-3f2bbdd2e7cf" />
+<img width="1862" height="957" alt="image" src="https://github.com/user-attachments/assets/d4a2cbb8-0967-4965-bb8b-e3a50477ee61" />
+
 
 <img width="1778" height="959" alt="image" src="https://github.com/user-attachments/assets/9f222481-87f9-478c-8008-a7e47c4a18b7" />
 
