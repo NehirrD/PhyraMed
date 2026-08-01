@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from database import Base, engine
 from routers import (
@@ -13,6 +15,7 @@ from routers import (
     analysis_router,
     chat_router,
 )
+
 
 app = FastAPI()
 
@@ -39,7 +42,14 @@ app.include_router(comment_router)
 app.include_router(analysis_router)
 app.include_router(chat_router)
 
+app.mount("/css", StaticFiles(directory="css"), name="css")
+app.mount("/js", StaticFiles(directory="js"), name="js")
+app.mount("/pages", StaticFiles(directory="pages"), name="pages")
 
 @app.get("/")
 def root():
-    return {"message": "PhyraMed API çalışıyor"}
+    return FileResponse("index.html")
+
+@app.get("/index.html")
+def root_index_html():
+    return FileResponse("index.html")

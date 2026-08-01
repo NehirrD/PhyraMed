@@ -1,5 +1,5 @@
 """Chatbot iş mantığı — chat.py router'ı tarafından çağrılır."""
-from openai import OpenAIError
+
 from ai.groq_client import TEXT_MODEL, get_groq_client
 from ai.product_db import format_product_context, search_products
 
@@ -8,16 +8,25 @@ DISCLAIMER = (
     "tıbbi tavsiye değildir. Sağlık kararları için doktorunuza danışın."
 )
 
+AI_KNOWLEDGE_DISCLAIMER = (
+    "Bu yanıt PhyraMed'in doğrulanmış ürün veritabanından değil, "
+    "yapay zekanın genel bilgisinden üretilmiştir; resmi bir sağlık "
+    "kuruluşu kaynağı değildir ve doğruluğu garanti edilmez. "
+    "Sağlık kararları için mutlaka bir doktora danışın."
+)
+
 SYSTEM_PROMPT = """
 Sen PhyraMed platformunun bilgilendirme chatbot'usun.
 
 Kurallar:
-- Sadece verilen ürün veritabanındaki bilgileri kullan.
-- Bilmediğin konuda tahmin yürütme.
+- Eğer sana ürün veritabanı bilgisi verildiyse, cevabını SADECE bu bilgiye dayandır.
+- Eğer sana "ürün veritabanında bulunamadı" bilgisi verildiyse, kendi genel bilgini
+  kullanarak kısa ve bilgilendirici bir cevap verebilirsin, ancak bunun doğrulanmış
+  bir kaynak olmadığını açıkça belirtmen gerekir.
 - Tıbbi teşhis koyma.
 - Tedavi önerme.
 - Kısa ve anlaşılır cevap ver.
-- Yan etki ve etkileşimleri mutlaka belirt.
+- Ürün veritabanından cevap veriyorsan yan etki ve etkileşimleri mutlaka belirt.
 """
 
 
@@ -25,58 +34,43 @@ def template_answer(question: str, products: list[dict]) -> str:
     if not products:
         return (
             f'Sorunuz: "{question}"\n\n'
-            "PhyraMed'de bu ürün veya konu için henüz "
-            "kaynaklandırılmış içerik bulunmuyor.\n"
-            "Bu nedenle doğruluğunu kontrol edemediğimiz "
-            "genel yapay zekâ bilgisi sunmuyoruz.\n"
-            "Ürün adını kontrol edebilir veya bir sağlık "
-            "profesyoneline danışabilirsiniz.\n\n"
+            "Veritabanında uygun ürün bulunamadı.\n"
             f"UYARI: {DISCLAIMER}"
         )
 
-    lines = [
-        f'Sorunuz: "{question}"',
-        "",
-        "İlgili ürünler:",
-        "",
-    ]
-
-    for product in products:
+    lines = [f'Sorunuz: "{question}"', "", "İlgili ürünler:", ""]
+    for p in products:
         lines.extend([
-            f"Ürün: {product.get('name') or 'Belirtilmemiş'}",
-            (
-                "Kullanım amacı: "
-                f"{product.get('usage_purpose') or 'Belirtilmemiş'}"
-            ),
-            (
-                "Bilimsel kanıt özeti: "
-                f"{product.get('expert_opinion_summary') or 'Belirtilmemiş'}"
-            ),
+            f"Ürün: {p.get('name')}",
+            f"Kullanım amacı: {p.get('usage_purpose')}",
+            f"Uzman görüşü: {p.get('expert_opinion_summary')}",
             "-" * 50,
         ])
-
     lines.append(f"UYARI: {DISCLAIMER}")
     return "\n".join(lines)
 
+
 def groq_answer(question: str, products: list[dict]) -> str:
-    # Veritabanında eşleşme yoksa genel model bilgisi kullanılmaz.
-    if not products:
-        return template_answer(question, products)
+    from openai import AuthenticationError
 
     client = get_groq_client()
-
     if not client:
         return template_answer(question, products)
 
     context = format_product_context(products)
 
-    user_prompt = (
-        f"Kullanıcı sorusu:\n{question}\n\n"
-        f"PhyraMed ürün veritabanı:\n\n{context}\n\n"
-        "Yalnızca yukarıdaki ürün veritabanındaki bilgileri kullanarak cevap ver.\n"
-        "Veritabanında yer almayan bilgi, doz, tedavi veya kişisel öneri üretme.\n"
-        f"Cevabın sonuna mutlaka şu uyarıyı ekle:\n{DISCLAIMER}"
-    )
+    if products:
+        user_prompt = (
+            f"Kullanıcı sorusu:\n{question}\n\nÜrün veritabanı:\n\n{context}\n\n"
+            "Yalnızca ürün veritabanındaki bilgileri kullanarak cevap ver.\n"
+            f"Cevabın sonuna mutlaka şu uyarıyı ekle:\n{DISCLAIMER}"
+        )
+    else:
+        user_prompt = (
+            f"Kullanıcı sorusu:\n{question}\n\nBu konu ürün veritabanımızda bulunamadı.\n"
+            "Kendi genel bilgini kullanarak kısa ve bilgilendirici bir cevap ver.\n"
+            f"Cevabın sonuna mutlaka şu uyarıyı ekle (aynen, eksiksiz):\n{AI_KNOWLEDGE_DISCLAIMER}"
+        )
 
     try:
         response = client.chat.completions.create(
@@ -88,32 +82,13 @@ def groq_answer(question: str, products: list[dict]) -> str:
             temperature=0.3,
             max_tokens=500,
         )
-
-        content = response.choices[0].message.content
-
-        if not content or not content.strip():
-            return template_answer(question, products)
-
-        return content.strip()
-
-    except OpenAIError as error:
-        print(f"[chatbot] Yapay zekâ servisine ulaşılamadı: {error}")
+        return response.choices[0].message.content
+    except AuthenticationError:
         return template_answer(question, products)
 
 def get_bot_response(question: str, use_groq: bool = True) -> str:
-    """Chat router'ının çağıracağı ana fonksiyon."""
-
-    clean_question = str(question or "").strip()
-
-    if not clean_question:
-        return "Lütfen ürün veya takviye hakkında bir soru yazın."
-
-    products = search_products(clean_question)
-
-    if not products:
-        return template_answer(clean_question, products)
-
+    """chat.py router'ının çağıracağı tek fonksiyon."""
+    products = search_products(question)
     if use_groq:
-        return groq_answer(clean_question, products)
-
-    return template_answer(clean_question, products)
+        return groq_answer(question, products)
+    return template_answer(question, products)
