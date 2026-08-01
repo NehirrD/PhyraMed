@@ -22,5 +22,8 @@ async def search(db: db_dependency, q: str = ""):
 
     categories = db.query(Category).filter(Category.name.ilike(f"%{q}%")).all()
     products = db.query(Product).filter(Product.name.ilike(f"%{q}%")).all()
+    for product in products:
+        product.search_count += 1
+    db.commit()
 
     return SearchResponse(categories=categories, products=products)

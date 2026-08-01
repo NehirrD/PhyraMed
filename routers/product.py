@@ -39,7 +39,16 @@ async def create_product(db:db_dependency,request:schemas.CreateProductRequest):
     db.commit()
     db.refresh(product)
     return product
-
+#Ana sayfada en çok aranan ürünleri gösterir:
+@router.get("/popular", status_code=status.HTTP_200_OK, response_model=List[schemas.ProductResponse])
+async def list_products_popular(db: db_dependency, limit: int = 4):
+    popular_products = (
+        product_query(db)
+        .order_by(models.Product.search_count.desc())
+        .limit(limit)
+        .all()
+    )
+    return popular_products
 #ürünler sekmesinde tüm ürünleri listeler, filtrelere göre sıralar - evidence level, kategori, A-Z filtreleri
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[schemas.ProductResponse])
 async def list_products(db: db_dependency,q: str = None,category_id: int = None,evidence_level: EvidenceLevel = None,sort_by: str = "name",order: str = "asc"):

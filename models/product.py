@@ -25,6 +25,7 @@ class Product(Base):
     status=Column(Enum(ProductStatus))
     created_at=Column(DateTime(timezone=True), server_default=func.now())
     updated_at=Column(DateTime(timezone=True), onupdate=func.now())
+    search_count = Column(Integer, default=0, nullable=False)
 
     risks = relationship("Risk", back_populates="product")
     sources = relationship("Source", back_populates="product")

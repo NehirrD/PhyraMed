@@ -29,6 +29,7 @@ class ProductResponse(BaseModel):
     status:ProductStatus
     created_at:datetime
     updated_at:Optional[datetime]=None
+    search_count: int = 0
     risks: List[RiskResponse] = []
     sources: List[SourceResponse] = []
     interactions: List[InteractionResponse] = []

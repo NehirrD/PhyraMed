@@ -57,6 +57,31 @@
       </div>
     </section>
 
+    <section class="section search-section">
+      <div class="search-bar-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Ürün veya kategori ara... (ör. demir, uyku)"
+          autocomplete="off"
+        />
+        <button type="button" id="search-clear" class="search-clear" style="display:none;" aria-label="Aramayı temizle">✕</button>
+      </div>
+      <div id="search-results" class="search-results" style="display:none;"></div>
+    </section>
+
+    <section class="section" id="popular-section">
+      <div class="section-head">
+        <h2>En çok aranan ürünler</h2>
+        <span class="hint">Kullanıcıların en sık aradığı takviyeler</span>
+      </div>
+      <div class="grid popular-products" id="popular-grid"></div>
+    </section>
+
     <section class="section">
       <div class="section-head">
         <h2>Kategoriler</h2>
@@ -103,36 +128,65 @@
     PhyraMed.renderSkeletons(catGrid, 6, "skeleton-category");
     PhyraMed.renderSkeletons(prodGrid, 6, "skeleton-product");
 
+    const popGrid = document.getElementById("popular-grid");
+    PhyraMed.renderSkeletons(popGrid, 4, "skeleton-product");
+
     try {
-      const [categoryResponse, productResponse] = await Promise.all([
+      const [categoryResponse, productResponse, popularResponse] = await Promise.all([
         fetch(`${API_BASE_URL}/category/`),
         fetch(`${API_BASE_URL}/products/`),
+        fetch(`${API_BASE_URL}/products/popular?limit=4`),
       ]);
 
-      if (!categoryResponse.ok) {
-        throw new Error(
-          `Kategori isteği başarısız: ${categoryResponse.status}`
-        );
-      }
-
-      if (!productResponse.ok) {
-        throw new Error(
-          `Ürün isteği başarısız: ${productResponse.status}`
-        );
-      }
+      if (!categoryResponse.ok) throw new Error(`Kategori isteği başarısız: ${categoryResponse.status}`);
+      if (!productResponse.ok) throw new Error(`Ürün isteği başarısız: ${productResponse.status}`);
+      if (!popularResponse.ok) throw new Error(`Popüler ürün isteği başarısız: ${popularResponse.status}`);   // <-- YENİ
 
       categories = await categoryResponse.json();
       products = await productResponse.json();
+      const popularProducts = await popularResponse.json();
 
       categories.sort((a, b) => {
         const aIndex = CATEGORY_ORDER.indexOf(a.name);
         const bIndex = CATEGORY_ORDER.indexOf(b.name);
-
         return aIndex - bIndex;
       });
+const POPULAR_CARD_COLORS = [
+      { bg: "linear-gradient(135deg, #1E3222, #16241A)", text: "#fff" },
+      { bg: "linear-gradient(135deg, #2E7D4F, #1E3222)", text: "#fff" },
+      { bg: "linear-gradient(135deg, #3F6B44, #29442E)", text: "#fff" },
+      { bg: "linear-gradient(135deg, #6B9A68, #3F6B44)", text: "#fff" },
+    ];
 
+    function renderPopularProducts(popularProducts) {
+      popGrid.innerHTML = "";
+
+      if (!popularProducts || popularProducts.length === 0) {
+        popGrid.innerHTML = `<p style="grid-column:1/-1;color:var(--muted);font-size:0.9rem;">Henüz yeterli arama verisi yok.</p>`;
+        return;
+      }
+
+      popularProducts.forEach((product, i) => {
+        const color = POPULAR_CARD_COLORS[i % POPULAR_CARD_COLORS.length];
+        const link = document.createElement("a");
+        link.className = "card popular-card";
+        link.href = `pages/urun.html?id=${encodeURIComponent(product.id)}`;
+        link.style.background = color.bg;
+        link.style.color = color.text;
+        link.innerHTML = `
+          <span class="popular-rank">#${i + 1}</span>
+          <h3>${PhyraMed.escapeHTML(product.name)}</h3>
+          <p class="desc" style="color:inherit;opacity:0.9;">
+            ${PhyraMed.escapeHTML(product.usage_purpose || "")}
+          </p>
+          <span class="popular-search-count">🔍 ${product.search_count ?? 0} kez arandı</span>
+        `;
+        popGrid.appendChild(link);
+      });
+    }
       renderCategories();
       renderProducts(null);
+      renderPopularProducts(popularProducts);
     } catch (error) {
       console.error("Ana sayfa verileri yüklenemedi:", error);
       renderLoadError();
@@ -274,18 +328,121 @@
       `;
 
       prodGrid.innerHTML = `
-        <p
-          style="
-            grid-column:1/-1;
-            color:var(--evidence-weak);
-            font-size:0.9rem;
-          "
-        >
+        <p style="grid-column:1/-1;color:var(--evidence-weak);font-size:0.9rem;">
           Ürünler yüklenemedi. Lütfen daha sonra tekrar deneyin.
+        </p>
+      `;
+
+      popGrid.innerHTML = `
+        <p style="grid-column:1/-1;color:var(--evidence-weak);font-size:0.9rem;">
+          Popüler ürünler yüklenemedi.
         </p>
       `;
     }
   });
+  // --- Arama çubuğu ---
+    const searchInput = document.getElementById("search-input");
+    const searchResults = document.getElementById("search-results");
+    const searchClear = document.getElementById("search-clear");
+    let searchDebounceTimer = null;
+
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.trim();
+      searchClear.style.display = query ? "block" : "none";
+
+      clearTimeout(searchDebounceTimer);
+
+      if (!query) {
+        searchResults.style.display = "none";
+        searchResults.innerHTML = "";
+        return;
+      }
+
+      searchDebounceTimer = setTimeout(() => runSearch(query), 300);
+    });
+
+    searchClear.addEventListener("click", () => {
+      searchInput.value = "";
+      searchClear.style.display = "none";
+      searchResults.style.display = "none";
+      searchResults.innerHTML = "";
+      searchInput.focus();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search-section")) {
+        searchResults.style.display = "none";
+      }
+    });
+
+    async function runSearch(query) {
+      searchResults.style.display = "block";
+      searchResults.innerHTML = `<p class="search-loading">Aranıyor...</p>`;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error(`Arama isteği başarısız: ${res.status}`);
+
+        const result = await res.json();
+        renderSearchResults(result);
+      } catch (error) {
+        console.error("Arama başarısız:", error);
+        searchResults.innerHTML = `<p class="search-loading" style="color:var(--evidence-weak);">Arama sırasında bir hata oluştu.</p>`;
+      }
+    }
+
+    function renderSearchResults(result) {
+      const cats = result.categories || [];
+      const prods = result.products || [];
+
+      if (cats.length === 0 && prods.length === 0) {
+        searchResults.innerHTML = `<p class="search-loading">Sonuç bulunamadı.</p>`;
+        return;
+      }
+
+      let html = "";
+
+      if (cats.length > 0) {
+        html += `<div class="search-group-label">Kategoriler</div>`;
+        cats.forEach((cat) => {
+          html += `
+            <a class="search-result-row" data-category-id="${cat.id}">
+              📁 ${PhyraMed.escapeHTML(cat.name)}
+            </a>
+          `;
+        });
+      }
+
+      if (prods.length > 0) {
+        html += `<div class="search-group-label">Ürünler</div>`;
+        prods.forEach((p) => {
+          html += `
+            <a class="search-result-row" href="pages/urun.html?id=${encodeURIComponent(p.id)}">
+              🌿 ${PhyraMed.escapeHTML(p.name)}
+            </a>
+          `;
+        });
+      }
+
+      searchResults.innerHTML = html;
+
+      searchResults.querySelectorAll("[data-category-id]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const catId = Number(el.dataset.categoryId);
+          activeCategory = catId;
+          searchResults.style.display = "none";
+          searchInput.value = "";
+          searchClear.style.display = "none";
+
+          [...catGrid.children].forEach((element) => {
+            element.classList.toggle("active", Number(element.dataset.categoryId) === activeCategory);
+          });
+
+          renderProducts(activeCategory);
+          document.getElementById("product-grid").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    }
   </script>
 </body>
 </html>
