@@ -1,12 +1,11 @@
 fastapi
 uvicorn
 sqlalchemy
-python-dotenv
+python-dotenv>=1.0.0
 psycopg2-binary
 pydantic
 pydantic-settings
 python-multipart
 openai>=1.30.0
-python-dotenv>=1.0.0
-requestschromadb==1.5.9
+requests
 chromadb==1.5.9
