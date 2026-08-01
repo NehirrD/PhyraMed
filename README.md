@@ -264,3 +264,95 @@ Alper Güler
 - Unit test'ler için ayrılan efor/saatin Sprint 3'te artırılması gerektiği tekrar vurgulanmıştır.
 - AI özelliklerinin (chatbot, görsel tanıma, yorum analizi) entegrasyon ve doğrulama testleri için süre planlanması kararlaştırılmıştır.
 
+# Sprint 3
+
+**Sprint Tarihleri:** 20 Temmuz – 2 Ağustos 2026
+
+## Sprint Notları
+
+Sprint 3 kapsamında Sprint 2'de POC seviyesinde tamamlanan yapay zekâ özelliklerinin (görsel tanıma, yorum analizi, chatbot) ürün veritabanına bağlanması, kaynak/güvenilirlik etiketleme mantığının veri modeline işlenmesi, PB-04 ile PB-10 arasındaki story'lerin frontend entegrasyonunun tamamlanması ve projenin teslime hazır hale getirilmesi hedeflenmiştir.
+
+Sprint 3, projenin son sprinti olarak planlanlandığından dolayı API'lerin güvenlik/performans testleri, uçtan uca entegrasyon testleri, GitHub dokümantasyonunun tamamlanması, tanıtım videosunun hazırlanması ve teslim formunun gönderilmesi gibi kapanış görevleri de backlog'a eklenmiştir.
+
+**Sprint 3 sonunda proje teslime hazır hale getirilmiş ve PhyraMed MVP'si tamamlanmıştır.**
+
+## Backlog Düzeni ve Story Seçimleri
+
+Sprint 3 backlog'u, Sprint 2 Review'da Sprint 3'e aktarılan PBI'lar ile projenin teslim sürecine ait görevler birlikte ele alınacak şekilde düzenlenmiştir.
+
+Sprint 2'den devreden ve Sprint 3'te tamamlanan story'ler:
+
+- **PB-04:** Kullanıcı kullanım iddiasının bilimsel kanıt seviyesini görebilmeli
+- **PB-05:** Kullanıcı bilimsel ve resmî kaynakları görüntüleyebilmeli
+- **PB-06:** Kullanıcı risk, yan etki ve olası etkileşim bilgilerini görüntüleyebilmeli
+- **PB-08:** Kullanıcı fotoğraf yükleyerek bitkiyi tanımlayabilmeli
+- **PB-09:** Kullanıcı ürün yorumlarının toplu analizini görüntüleyebilmeli
+- **PB-10:** Kullanıcı chatbot üzerinden ürün ve takviyeler hakkında bilgi alabilmeli
+
+Bunlara ek olarak, aşağıdaki teknik kapanış görevleri Sprint 3 backlog'una eklenmiş ve tamamlanmıştır:
+
+- API'lerin son güvenlik/performans testleri
+- Nice-to-have — ilaç-bitki etkileşim uyarı sisteminin backend mantığının kurulması
+- Tüm GitHub dokümantasyonunun tamamlanmasına destek
+- Uçtan uca entegrasyon testlerine katılım
+
+Proje teslimine yönelik olarak SM tarafında da aşağıdaki görevler tamamlanmıştır:
+
+- SM: 3 dakikalık proje tanıtım videosunun hazırlanması ve YouTube'a yüklenmesi
+- SM: README ve GitHub repo'sunun final haline getirilmesi ve kontrol edilmesi 
+- SM: Teslim formunun gönderilmesi
+
+Sprint 3 sonu itibarıyla backlog'daki tüm story ve görevler tamamlanmış, proje teslime hazır hale getirilmiştir.
+
+## Daily Scrum
+
+Ekip içi günlük iletişim, görev güncellemeleri ve karşılaşılan engeller önceki sprintlerde olduğu gibi Slack üzerinden paylaşılmıştır. Görevlerin resmî durumları Jira Sprint Board üzerinden takip edilmiş ve Sprint 3 son durumu README'ye eklenen board ekran görüntüleriyle belgelenmiştir.
+
+## Product Backlog URL
+
+[PhyraMed Jira Sprint Board](#)
+
+## Sprint Board Update
+
+<img width="1062" height="604" alt="image" src="https://github.com/user-attachments/assets/d623d9fa-7fab-4737-bdaf-53029015b2dc" />
+
+<img width="1051" height="607" alt="image" src="https://github.com/user-attachments/assets/522e17e1-a812-4c75-8287-10309cddd7a5" />
+
+
+## Ürün Durumu: Ekran görüntüleri
+
+<img width="1865" height="960" alt="image" src="https://github.com/user-attachments/assets/cf0a5e81-23d3-4156-bf41-3f2bbdd2e7cf" />
+
+<img width="1778" height="959" alt="image" src="https://github.com/user-attachments/assets/9f222481-87f9-478c-8008-a7e47c4a18b7" />
+
+
+## Sprint Review
+
+Sprint Review, Sprint 3 sonunda takımın geliştirdiği çıktıların sprint hedefleri ve ürün vizyonuyla karşılaştırılması amacıyla gerçekleştirilmiştir. Toplantıda görsel tanıma, yorum analizi ve chatbot özelliklerinin ürün veritabanına bağlanmış hâliyle demosu, kaynak/güvenilirlik etiketleme mantığının ürün kartlarına yansıyan hâli ve PB-04–PB-10 story'lerinin tamamlanmış frontend entegrasyonu gösterilmiştir. Ayrıca proje tanıtım videosu ve final README/GitHub repo durumu ekip ile birlikte gözden geçirilmiştir.
+
+Ekip, Sprint 3 için planlanan tüm hedeflere ulaşıldığını ve PhyraMed MVP'sinin ürün vizyonuyla uyumlu şekilde tamamlandığını değerlendirmiştir.
+
+**Alınan kararlar:**
+
+- PB-04 ile PB-10 arasındaki tüm story'lerin frontend entegrasyonunun eksiksiz tamamlandığı ve kabul kriterlerini karşıladığının yeniden gözden geçirilmesi planlanmıştır.
+- AI özelliklerinin (görsel tanıma, yorum analizi, chatbot) ürün veritabanına bağlanma sürecinin başarıyla tamamlandığı teyit edilmiştir.
+- API güvenlik/performans testleri ve uçtan uca entegrasyon testlerinde kritik bir problem tespit edilmemiştir.
+- README ve GitHub repo'sunun final hâline getirildiği, proje tanıtım videosunun YouTube'a yüklendiği ve teslim formunun gönderildiği doğrulanmıştır.
+- Proje bu sprint ile birlikte tamamlanmış ve teslim edilmiştir.
+
+### Sprint Review Katılımcıları
+
+Nehir Doğan · Melike Şenses · Enes Tüysüz · Ahmet Kılıç · Alper Güler
+
+## Sprint Retrospective
+
+Retrospective kapsamında aşağıdaki konular değerlendirilmiştir:
+
+- Ekip içi iletişim ve koordinasyon
+- Görev dağılımının etkinliği (Dev2/Dev4/Dev5 arasındaki iş yükü dengesi)
+- Sprint içerisinde iyi ilerleyen çalışmalar
+- Geciken veya tamamlanamayan görevlerin nedenleri
+- Karşılaşılan engeller
+- Proje genelinde alınan dersler
+
+**Alınan kararlar:** Dev2/Dev4/Dev5 arasındaki iş yükü dengesinin Sprint 3'te önceki sprintlere kıyasla daha dengeli dağıldığı değerlendirilmiştir. Unit test'lere ayrılan efor/saatin artırılması yönündeki önceki sprintlerden gelen kararın bu sprintte uygulandığı ve test kapsamının iyileştiği belirtilmiştir. AI özelliklerinin entegrasyon ve doğrulama testlerinin planlandığı şekilde tamamlandığı teyit edilmiştir. Proje genelinde, sprint planlama aşamasında story point kullanımına geçilmemiş olmasının görev takibini zaman zaman zorlaştırdığı, ileride benzer bir projede story point kullanımının değerlendirilmesinin faydalı olacağı not edilmiştir. Ekip, proje sürecinin genel olarak başarılı geçtiğini ve PhyraMed MVP'sinin planlanan kapsamla tamamlanarak teslim edildiğini değerlendirmiştir.
