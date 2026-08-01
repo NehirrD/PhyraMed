@@ -126,6 +126,51 @@ def get_product_by_id(product_id: int) -> dict | None:
         db.close()
 
 
+def get_products_by_ids(product_ids: list[int]) -> list[dict]:
+    """Kimlikleri verilen ürünleri tek sorgu akışında ve istenen sırada getirir."""
+    ordered_ids: list[int] = []
+    seen: set[int] = set()
+
+    for value in product_ids:
+        try:
+            product_id = int(value)
+        except (TypeError, ValueError):
+            continue
+
+        if product_id not in seen:
+            seen.add(product_id)
+            ordered_ids.append(product_id)
+
+    if not ordered_ids:
+        return []
+
+    db = SessionLocal()
+
+    try:
+        products = (
+            product_query(db)
+            .filter(models.Product.id.in_(ordered_ids))
+            .all()
+        )
+        serialized = {
+            int(product.id): serialize_product(product)
+            for product in products
+        }
+        return [
+            serialized[product_id]
+            for product_id in ordered_ids
+            if product_id in serialized
+        ]
+    except Exception as error:
+        print(
+            "[product_db] Toplu ürün sorgusu başarısız: "
+            f"{error}"
+        )
+        return []
+    finally:
+        db.close()
+
+
 STOPWORDS = {
     "için",
     "icin",

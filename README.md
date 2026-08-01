@@ -3,7 +3,6 @@
 
 Build aracı veya framework kullanılmamıştır; proje düz HTML/CSS/JS ile
 geliştirilmiştir.
-=======
 <p align="center">
   <img src="docs/sprint-1/product-status/phyramed-brand-header.png" alt="PhyraMed Marka Görseli" width="100%">
 </p>
@@ -102,7 +101,6 @@ git add .
 git commit -m "[SCRUM-XX] açıklama"
 git push origin frontend/dev2-ahmet
 ```
-=======
 - **Enes Tüysüz:** Product Owner - Developer
 - **Nehir Doğan:** Scrum Master - Developer
 - **Melike Şenses:** Developer
