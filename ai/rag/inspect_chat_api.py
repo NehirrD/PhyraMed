@@ -31,6 +31,7 @@ class ChatTest:
     message: str
     required: tuple[str, ...] = ()
     any_of: tuple[str, ...] = ()
+    history: tuple[dict[str, str], ...] = ()
 
 
 def contains_casefold(text: str, expected: str) -> bool:
@@ -53,8 +54,17 @@ def require_any(answer: str, options: Iterable[str], test_name: str) -> None:
         )
 
 
-def post_chat(message: str) -> tuple[str, float]:
-    payload = json.dumps({"message": message}, ensure_ascii=False).encode("utf-8")
+def post_chat(
+    message: str,
+    history: tuple[dict[str, str], ...] = (),
+) -> tuple[str, float]:
+    payload = json.dumps(
+        {
+            "message": message,
+            "history": list(history),
+        },
+        ensure_ascii=False,
+    ).encode("utf-8")
     request = Request(
         CHAT_URL,
         data=payload,
@@ -105,6 +115,22 @@ def main() -> None:
             any_of=("Kediotu", "Çarkıfelek otu", "Magnezyum"),
         ),
         ChatTest(
+            name="Konuşma bağlamı",
+            message="Bu ürünün yan etkileri neler?",
+            history=(
+                {
+                    "role": "user",
+                    "content": "Melatonin hakkında hangi bilgiler bulunuyor?",
+                },
+                {
+                    "role": "assistant",
+                    "content": "Melatonin için kaynaklandırılmış bilgiler gösterildi.",
+                },
+            ),
+            required=("Melatonin", "UYARI"),
+            any_of=("baş ağrısı", "baş dönmesi", "bulantı", "uyku hali"),
+        ),
+        ChatTest(
             name="Kanıt seviyesi açıklaması",
             message="Kanıt seviyesi ne demek?",
             required=("kanıt seviyesi", "Değerlendiriliyor", "UYARI"),
@@ -124,7 +150,10 @@ def main() -> None:
         print("\n" + "=" * 72)
         print(f"TEST: {test.name}")
         print(f"SORU: {test.message}")
-        answer, elapsed = post_chat(test.message)
+        answer, elapsed = post_chat(
+            test.message,
+            history=test.history,
+        )
 
         require_all(answer, test.required, test.name)
         require_any(answer, test.any_of, test.name)

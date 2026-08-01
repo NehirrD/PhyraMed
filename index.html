@@ -77,7 +77,7 @@
     <section class="section" id="popular-section">
       <div class="section-head">
         <h2>En çok aranan ürünler</h2>
-        <span class="hint">Kullanıcıların en sık aradığı takviyeler</span>
+        <span class="hint">Kullanıcıların arama sonuçlarından en sık seçtiği takviyeler</span>
       </div>
       <div class="grid popular-products" id="popular-grid"></div>
     </section>
@@ -170,7 +170,7 @@ const POPULAR_CARD_COLORS = [
         const color = POPULAR_CARD_COLORS[i % POPULAR_CARD_COLORS.length];
         const link = document.createElement("a");
         link.className = "card popular-card";
-        link.href = `pages/urun.html?id=${encodeURIComponent(product.id)}`;
+        link.href = `pages/urun.html?id=${encodeURIComponent(product.id)}&v=20260802-final2`;
         link.style.background = color.bg;
         link.style.color = color.text;
         link.innerHTML = `
@@ -179,7 +179,7 @@ const POPULAR_CARD_COLORS = [
           <p class="desc" style="color:inherit;opacity:0.9;">
             ${PhyraMed.escapeHTML(product.usage_purpose || "")}
           </p>
-          <span class="popular-search-count">🔍 ${product.search_count ?? 0} kez arandı</span>
+          <span class="popular-search-count">🔍 ${product.search_count ?? 0} seçim</span>
         `;
         popGrid.appendChild(link);
       });
@@ -284,7 +284,7 @@ const POPULAR_CARD_COLORS = [
 
         link.className = "card product";
         link.href =
-          `pages/urun.html?id=${encodeURIComponent(product.id)}`;
+          `pages/urun.html?id=${encodeURIComponent(product.id)}&v=20260802-final2`;
 
         link.innerHTML = `
           <div class="card-top">
@@ -339,8 +339,8 @@ const POPULAR_CARD_COLORS = [
         </p>
       `;
     }
-  });
-  // --- Arama çubuğu ---
+
+    // --- Arama çubuğu ---
     const searchInput = document.getElementById("search-input");
     const searchResults = document.getElementById("search-results");
     const searchClear = document.getElementById("search-clear");
@@ -417,7 +417,11 @@ const POPULAR_CARD_COLORS = [
         html += `<div class="search-group-label">Ürünler</div>`;
         prods.forEach((p) => {
           html += `
-            <a class="search-result-row" href="pages/urun.html?id=${encodeURIComponent(p.id)}">
+            <a
+              class="search-result-row"
+              data-product-id="${p.id}"
+              href="pages/urun.html?id=${encodeURIComponent(p.id)}&v=20260802-final2"
+            >
               🌿 ${PhyraMed.escapeHTML(p.name)}
             </a>
           `;
@@ -427,8 +431,10 @@ const POPULAR_CARD_COLORS = [
       searchResults.innerHTML = html;
 
       searchResults.querySelectorAll("[data-category-id]").forEach((el) => {
-        el.addEventListener("click", () => {
+        el.addEventListener("click", async () => {
           const catId = Number(el.dataset.categoryId);
+          if (!Number.isInteger(catId) || catId <= 0) return;
+
           activeCategory = catId;
           searchResults.style.display = "none";
           searchInput.value = "";
@@ -438,11 +444,54 @@ const POPULAR_CARD_COLORS = [
             element.classList.toggle("active", Number(element.dataset.categoryId) === activeCategory);
           });
 
-          renderProducts(activeCategory);
-          document.getElementById("product-grid").scrollIntoView({ behavior: "smooth", block: "start" });
+          try {
+            const response = await fetch(
+              `${API_BASE_URL}/category/${encodeURIComponent(catId)}/search-selection`,
+              {
+                method: "POST",
+                keepalive: true,
+              }
+            );
+            if (!response.ok) {
+              throw new Error(`Kategori arama seçimi kaydedilemedi: ${response.status}`);
+            }
+          } catch (error) {
+            console.error("Kategori arama seçimi kaydedilemedi:", error);
+          } finally {
+            renderProducts(activeCategory);
+            document.getElementById("product-grid").scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+
+      searchResults.querySelectorAll("[data-product-id]").forEach((el) => {
+        el.addEventListener("click", async (event) => {
+          event.preventDefault();
+
+          const productId = Number(el.dataset.productId);
+          const destination = el.href;
+
+          try {
+            const response = await fetch(
+              `${API_BASE_URL}/products/${encodeURIComponent(productId)}/search-selection`,
+              {
+                method: "POST",
+                keepalive: true,
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`Arama seçimi kaydedilemedi: ${response.status}`);
+            }
+          } catch (error) {
+            console.error("Arama seçimi kaydedilemedi:", error);
+          } finally {
+            window.location.assign(destination);
+          }
         });
       });
     }
+  });
   </script>
 </body>
 </html>

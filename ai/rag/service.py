@@ -7,11 +7,13 @@ bilgilerini kullanır. Bilgi bulunmadığında genel model bilgisine geçilmez.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
 from openai import OpenAIError
 
+from ai.chat_context import looks_like_context_follow_up, resolve_history_context
 from ai.groq_client import TEXT_MODEL, extract_model_text, get_groq_client
 from ai.product_db import get_products_by_ids, search_products
 from ai.rag.retriever import retrieve_products
@@ -52,6 +54,17 @@ class ProductResolution:
     products: list[dict[str, Any]]
     strategy: str
     rag_results: list[dict[str, Any]]
+
+
+def _context_clarification_answer(product_names: list[str]) -> str:
+    names = ", ".join(product_names)
+    return (
+        "Önceki konuşmada birden fazla ürün geçti"
+        + (f": {names}." if names else ".")
+        + " Hangi ürünü kastettiğinizi adıyla yazın; böylece yalnızca o ürüne "
+        "ait kaynaklandırılmış bilgileri gösterebilirim.\n\n"
+        f"UYARI: {DISCLAIMER}"
+    )
 
 
 def _clean_text(value: Any, default: str = "Belirtilmemiş") -> str:
@@ -338,7 +351,12 @@ def groq_answer(question: str, products: list[dict[str, Any]]) -> str:
         return template_answer(question, products)
 
 
-def answer_question(question: str, use_groq: bool = True) -> str:
+def answer_question(
+    question: str,
+    *,
+    history: Sequence[Mapping[str, Any]] | None = None,
+    use_groq: bool = True,
+) -> str:
     """Chat router'ının çağıracağı güvenli RAG giriş noktası."""
 
     clean_question = str(question or "").strip()
@@ -350,10 +368,39 @@ def answer_question(question: str, use_groq: bool = True) -> str:
         return platform_answer
 
     resolution = resolve_products(clean_question)
+    effective_question = clean_question
+
+    if not resolution.products and looks_like_context_follow_up(clean_question):
+        history_resolution = resolve_history_context(
+            history,
+            lambda previous_question: resolve_products(
+                previous_question
+            ).products,
+        )
+
+        if history_resolution.ambiguous_product_names:
+            return _context_clarification_answer(
+                history_resolution.ambiguous_product_names
+            )
+
+        if history_resolution.products:
+            resolution = ProductResolution(
+                products=history_resolution.products,
+                strategy="history_context",
+                rag_results=[],
+            )
+            product_names = ", ".join(
+                _clean_text(product.get("name"))
+                for product in resolution.products
+            )
+            effective_question = (
+                f"{product_names} hakkında devam sorusu: {clean_question}"
+            )
+
     if not resolution.products:
         return template_answer(clean_question, [])
 
     if use_groq:
-        return groq_answer(clean_question, resolution.products)
+        return groq_answer(effective_question, resolution.products)
 
-    return template_answer(clean_question, resolution.products)
+    return template_answer(effective_question, resolution.products)

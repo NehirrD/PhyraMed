@@ -188,12 +188,18 @@
         </section>
 
         <section class="panel ai-summary-panel" id="ai-summary-panel">
-          <h2>🤖 AI Yorum Özeti</h2>
+          <h2>📊 Yorum Analizi</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin:0 0 0.8rem;">
+            Bu analiz kullanıcı deneyimlerini özetler; bilimsel kanıt, tanı veya tıbbi tavsiye değildir.
+          </p>
           <div id="ai-summary-content"><p class="search-loading">Yorumlar analiz ediliyor...</p></div>
         </section>
 
         <section class="panel comments-panel">
           <h2>💬 Kullanıcı yorumları</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin:0 0 0.8rem;">
+            Yorumlar kullanıcı beyanıdır; doğrulanmış sağlık bilgisi olarak değerlendirilmemelidir.
+          </p>
           <div id="comments-list"><p class="search-loading">Yorumlar yükleniyor...</p></div>
 
           <form id="comment-form" class="comment-form">
@@ -253,7 +259,10 @@
       const listEl = document.getElementById("comments-list");
       if (!listEl) return;
       try {
-        const res = await fetch(`${API_BASE_URL}/comment/${encodeURIComponent(productId)}`);
+        const res = await fetch(
+          `${API_BASE_URL}/comment/${encodeURIComponent(productId)}?_=${Date.now()}`,
+          { cache: "no-store" }
+        );
         if (!res.ok) throw new Error(`Yorumlar yüklenemedi: ${res.status}`);
         const comments = await res.json();
         renderComments(comments);
@@ -313,12 +322,21 @@
               rating,
             }),
           });
-          if (!res.ok) throw new Error(`Yorum gönderilemedi: ${res.status}`);
+          if (!res.ok) {
+            const payload = await res.json().catch(() => null);
+            const detail = Array.isArray(payload?.detail)
+              ? payload.detail.map((item) => item?.msg).filter(Boolean).join(" ")
+              : payload?.detail;
+            throw new Error(detail || `Yorum gönderilemedi: ${res.status}`);
+          }
           form.reset();
-          await loadComments(productId);
+          await Promise.all([
+            loadComments(productId),
+            loadAiSummary(productId),
+          ]);
         } catch (error) {
           console.error("Yorum gönderilemedi:", error);
-          errorEl.textContent = "Yorum gönderilirken bir hata oluştu. Lütfen tekrar deneyin.";
+          errorEl.textContent = error.message || "Yorum gönderilirken bir hata oluştu. Lütfen tekrar deneyin.";
           errorEl.style.display = "block";
         } finally {
           submitBtn.disabled = false;
@@ -330,13 +348,16 @@
       const contentEl = document.getElementById("ai-summary-content");
       if (!contentEl) return;
       try {
-        const res = await fetch(`${API_BASE_URL}/analysis/comments/${encodeURIComponent(productId)}/deep`);
-        if (!res.ok) throw new Error(`AI özeti alınamadı: ${res.status}`);
+        const res = await fetch(
+          `${API_BASE_URL}/analysis/comments/${encodeURIComponent(productId)}/deep?use_groq=true&_=${Date.now()}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) throw new Error(`Yorum analizi alınamadı: ${res.status}`);
         const data = await res.json();
         renderAiSummary(data);
       } catch (error) {
-        console.error("AI özeti yüklenemedi:", error);
-        contentEl.innerHTML = `<p class="search-loading" style="color:var(--evidence-weak);">AI özeti şu anda oluşturulamıyor.</p>`;
+        console.error("Yorum analizi yüklenemedi:", error);
+        contentEl.innerHTML = `<p class="search-loading" style="color:var(--evidence-weak);">Yorum analizi şu anda oluşturulamıyor.</p>`;
       }
     }
 
@@ -354,13 +375,22 @@
       const sideEffectsHTML = (data.side_effects && data.side_effects.length > 0)
         ? `
           <div class="ai-side-effects">
-            <strong>En sık bildirilen yan etkiler:</strong>
+            <strong>Kullanıcıların bildirdiği olası yan etkiler:</strong>
             <ul>${data.side_effects.slice(0, 5).map((s) => `<li>${esc(s.effect)} (${s.count} kez)</li>`).join("")}</ul>
           </div>
         `
         : "";
+      const sampleWarningHTML = data.sample_size_warning
+        ? `<p class="analysis-sample-warning">${esc(data.sample_size_warning)}</p>`
+        : "";
+      const method = String(data.method || "");
+      const methodLabel = method.includes("groq")
+        ? "Groq destekli dil özeti · Sayısal sonuçlar kural tabanlıdır"
+        : "Kural tabanlı güvenli özet · Groq kullanılamadı veya etkinleşmedi";
       contentEl.innerHTML = `
         <p class="ai-summary-text">${esc(data.summary_text || "")}</p>
+        <p style="font-size:0.76rem;color:var(--muted);margin:0.45rem 0;">${esc(methodLabel)}</p>
+        ${sampleWarningHTML}
         <div class="sentiment-bar">
           <div class="sentiment-segment positive" style="width:${posPct}%;" title="Olumlu %${posPct}"></div>
           <div class="sentiment-segment neutral" style="width:${neuPct}%;" title="Nötr %${neuPct}"></div>

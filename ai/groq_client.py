@@ -58,12 +58,29 @@ def extract_model_text(content: str) -> str:
     return text
 
 
-def vision_completion(client, messages: list, *, max_tokens: int = 400, temperature: float = 0.1):
-    """Vision model çağrısı — Qwen thinking modunu kapatır."""
-    return client.chat.completions.create(
-        model=VISION_MODEL,
-        messages=messages,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        extra_body={"reasoning_effort": "none"},
-    )
+def vision_completion(
+    client,
+    messages: list,
+    *,
+    max_tokens: int = 400,
+    temperature: float = 0.1,
+    response_format: dict | None = None,
+):
+    """Vision model çağrısı — Qwen thinking modunu kapatır.
+
+    ``response_format`` verildiğinde Groq JSON Object Mode gibi yapılandırılmış
+    çıktı seçenekleri OpenAI uyumlu istemciye aktarılır.
+    """
+
+    request = {
+        "model": VISION_MODEL,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "extra_body": {"reasoning_effort": "none"},
+    }
+
+    if response_format is not None:
+        request["response_format"] = response_format
+
+    return client.chat.completions.create(**request)
