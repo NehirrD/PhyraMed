@@ -342,4 +342,8 @@ function addBubble(from, text) {
     mascotBtn.classList.remove("talking", "happy");
     if (mood !== "idle") mascotBtn.classList.add(mood);
   }
+  window.PhyraMed.askChatbot = function (question) {
+    panel.classList.add("open");
+    send(question);
+  };
 }

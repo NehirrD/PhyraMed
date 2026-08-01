@@ -703,4 +703,14 @@ main.page { padding: 0 0 4rem; max-width: 74rem; margin: 0 auto; }
   padding-top: 0.7rem;
 }
 .ai-side-effects ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+.search-no-result {
+  padding: 0.6rem;
+  text-align: left;
+}
+
+.search-ask-ai-btn {
+  width: 100%;
+  justify-content: center;
+  display: flex;
+}
 
