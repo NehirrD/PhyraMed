@@ -395,8 +395,23 @@ const POPULAR_CARD_COLORS = [
       const cats = result.categories || [];
       const prods = result.products || [];
 
-      if (cats.length === 0 && prods.length === 0) {
-        searchResults.innerHTML = `<p class="search-loading">Sonuç bulunamadı.</p>`;
+if (cats.length === 0 && prods.length === 0) {
+        searchResults.innerHTML = `
+          <div class="search-no-result">
+            <p class="search-loading" style="margin:0 0 0.6rem;">Sonuç bulunamadı.</p>
+            <button type="button" class="btn-primary search-ask-ai-btn" id="search-ask-ai-btn">
+              🤖 Phyra Asistan'a sor
+            </button>
+          </div>
+        `;
+
+        const askBtn = document.getElementById("search-ask-ai-btn");
+        askBtn.addEventListener("click", () => {
+          const currentQuery = searchInput.value.trim();
+          searchResults.style.display = "none";
+          PhyraMed.askChatbot(`${currentQuery} nedir, ne işe yarar?`);
+        });
+
         return;
       }
 
