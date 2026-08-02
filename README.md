@@ -226,7 +226,7 @@ Ekip içi günlük iletişim, görev güncellemeleri ve karşılaşılan engelle
 
 ### Product Backlog URL
 
-[PhyraMed Jira Sprint Board](#)
+[PhyraMed Jira Sprint Board](https://grup137.atlassian.net/jira/software/projects/SCRUM/boards/1)
 
 ### Sprint Board Update
 <img width="1429" height="699" alt="image" src="https://github.com/user-attachments/assets/abb9bfbe-093c-48f5-9a39-8e617a0444f4" />
@@ -310,7 +310,7 @@ Ekip içi günlük iletişim, görev güncellemeleri ve karşılaşılan engelle
 
 ## Product Backlog URL
 
-[PhyraMed Jira Sprint Board](#)
+[PhyraMed Jira Sprint Board](https://grup137.atlassian.net/jira/software/projects/SCRUM/boards/1)
 
 ## Sprint Board Update
 
