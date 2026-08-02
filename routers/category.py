@@ -1,0 +1,123 @@
+from typing import Annotated, List
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from starlette import status
+import models
+import schemas
+from database import get_db
+
+
+router = APIRouter(
+    prefix="/category",
+    tags=["Category"]
+)
+
+db_dependency= Annotated[Session,Depends(get_db)]
+
+#Yeni kategori oluşturan endpoint:
+@router.post("/", status_code=status.HTTP_201_CREATED,response_model= schemas.CategoryResponse)
+async def create_category(db: db_dependency,request: schemas.CreateCategoryRequest):
+    category=models.Category(
+        name=request.name,
+        description=request.description,
+    )
+    db.add(category)
+    db.commit()
+    db.refresh(category)
+    return category
+
+#Tüm kategorileri listeler:
+@router.get("/",status_code=status.HTTP_200_OK,response_model=List[schemas.CategoryResponse])
+async def list_categories(db:db_dependency):
+    categories=db.query(models.Category).all()
+    return categories
+
+#Ana sayfada populer kategorileri gösterir:
+@router.get("/popular", status_code=status.HTTP_200_OK,response_model=List[schemas.CategoryResponse])
+async def list_categories_popular(db: db_dependency,limit:int=4):
+    popular_categories=db.query(models.Category).order_by(models.Category.search_count.desc()).limit(limit).all()
+    return popular_categories
+
+# Arama sonucunda kullanıcı tarafından seçilen kategoriyi bir kez sayar:
+@router.post(
+    "/{category_id}/search-selection",
+    status_code=status.HTTP_200_OK,
+    response_model=dict[str, int],
+)
+async def track_category_search_selection(
+    db: db_dependency,
+    category_id: int,
+):
+    category = (
+        db.query(models.Category)
+        .filter(models.Category.id == category_id)
+        .first()
+    )
+    if category is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Category not found",
+        )
+
+    category.search_count = int(category.search_count or 0) + 1
+    db.commit()
+    db.refresh(category)
+
+    return {
+        "category_id": int(category.id),
+        "search_count": int(category.search_count),
+    }
+
+
+#Tek kategori detay döner:
+@router.get("/{category_id}",status_code=status.HTTP_200_OK,response_model=schemas.CategoryResponse)
+async def get_category(db: db_dependency,category_id:int):
+    category = db.query(models.Category).filter(models.Category.id==category_id).first()
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Category not found")
+    return category
+
+#Kategoriye ait tüm ürünleri gösterir:
+@router.get("/{category_id}/products",status_code=status.HTTP_200_OK,response_model=List[schemas.ProductResponse])
+async def get_categories_products(db: db_dependency,category_id:int,sort_by:str="name",order:str="asc"):
+    category = db.query(models.Category).filter(models.Category.id==category_id).first()
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Category not found")
+    # Listeleme endpoint'i salt okunurdur. Arama sayacı yalnızca
+    # /search-selection POST endpoint'i üzerinden artar.
+    query=db.query(models.Product).filter(models.Product.category_id==category_id)
+
+    allowed_sort_fields={"name":models.Product.name,"evidence_level":models.Product.evidence_level}
+    sort_column=allowed_sort_fields.get(sort_by,models.Product.name)
+    if order=="desc":
+        query=query.order_by(sort_column.desc())
+    else:
+        query=query.order_by(sort_column.asc())
+    products=query.all()
+    return products
+
+#Kategoriyi günceller:
+@router.put("/{category_id}",status_code=status.HTTP_200_OK,response_model=schemas.CategoryResponse)
+async def update_category(db:db_dependency, category_id:int,request:schemas.CreateCategoryRequest):
+    category=db.query(models.Category).filter(models.Category.id==category_id).first()
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Category not found")
+    category.name=request.name
+    category.description=request.description
+
+    db.commit()
+    db.refresh(category)
+    return category
+
+#Kategoriyi siler:
+@router.delete("/{category_id}",status_code=status.HTTP_204_NO_CONTENT)
+async def delete_category(db: db_dependency,category_id:int):
+    category = db.query(models.Category).filter(models.Category.id==category_id).first()
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Category not found")
+    db.delete(category)
+    db.commit()
+
+
+
+

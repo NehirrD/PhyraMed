@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PhyraMed — bitkisel takviyeler için bilimsel kanıt özeti, kanıt durumu ve risk bilgisiyle güvenilir bilgiler." />
+  <title>PhyraMed — Kanıta Dayalı Bitkisel Takviye Rehberi</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2329442E' d='M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/data.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body data-home="index.html" data-profil="pages/profil.html" data-tani="pages/gorsel-tanima.html">
+
+  <!-- İçerik js/main.js tarafından enjekte ediliyor (bkz. navHTML) -->
+  <header class="navbar"></header>
+
+  <main class="page">
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">YZTA Bootcamp 2026 · Takım 137</span>
+        <h1>Bitkisel takviyeler hakkında,<br>kanıta dayalı gerçekler.</h1>
+        <p class="lede">
+          İhtiyacına göre kategori seç, her ürün için bilimsel kanıt özetini,
+          kanıt durumunu ve olası riskleri gör — yorumlara değil, kaynağa güven.
+        </p>
+        <div class="legend" aria-label="Kanıt seviyesi açıklaması">
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--evidence-strong)"></span>Güçlü kanıt</span>
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--evidence-middle)"></span>Orta kanıt</span>
+          <span class="legend-chip"><span class="legend-dot" style="background:var(--evidence-weak)"></span>Zayıf kanıt</span>
+        </div>
+        <p style="margin-top:1.25rem;">
+          <a href="pages/gorsel-tanima.html" class="btn-primary" style="display:inline-flex;text-decoration:none;">
+            📷 Bir bitki fotoğrafı yükle
+          </a>
+        </p>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <!-- İmza görsel: yaprak + moleküler damar deseni -->
+        <svg viewBox="0 0 320 320" fill="none">
+          <path d="M160 26C110 78 74 122 74 176a86 86 0 0 0 172 0c0-54-36-98-86-150z"
+                fill="var(--forest-100)" stroke="var(--forest-300)" stroke-width="2"/>
+          <path d="M160 70v190" stroke="var(--forest-500)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M160 110l-38 26M160 110l38 26M160 160l-44 30M160 160l44 30M160 205l-30 24M160 205l30 24"
+                stroke="var(--forest-500)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="122" cy="136" r="7" fill="var(--evidence-strong)"/>
+          <circle cx="198" cy="136" r="7" fill="var(--evidence-middle)"/>
+          <circle cx="116" cy="190" r="7" fill="var(--evidence-middle)"/>
+          <circle cx="204" cy="190" r="7" fill="var(--evidence-strong)"/>
+          <circle cx="130" cy="229" r="6" fill="var(--evidence-weak)"/>
+          <circle cx="190" cy="229" r="6" fill="var(--evidence-strong)"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section search-section">
+      <div class="search-bar-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Ürün veya kategori ara... (ör. demir, uyku)"
+          autocomplete="off"
+        />
+        <button type="button" id="search-clear" class="search-clear" style="display:none;" aria-label="Aramayı temizle">✕</button>
+      </div>
+      <div id="search-results" class="search-results" style="display:none;"></div>
+    </section>
+
+    <section class="section" id="popular-section">
+      <div class="section-head">
+        <h2>En çok aranan ürünler</h2>
+        <span class="hint">Kullanıcıların arama sonuçlarından en sık seçtiği takviyeler</span>
+      </div>
+      <div class="grid popular-products" id="popular-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Kategoriler</h2>
+        <span class="hint">İhtiyacına en yakın olanı seç</span>
+      </div>
+      <div class="grid categories" id="category-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>İncelenen ürünler</h2>
+        <span class="hint">Kanıt durumu ve risk bilgileriyle</span>
+      </div>
+      <div class="grid products" id="product-grid"></div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <div class="chatbot-wrap"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const catGrid = document.getElementById("category-grid");
+    const prodGrid = document.getElementById("product-grid");
+
+    const API_BASE_URL =
+      PhyraMed.API_BASE_URL || "http://127.0.0.1:8000";
+
+    const CATEGORY_ORDER = [
+      "Uyku ve Dinlenme",
+      "Stres ve Zihinsel İyi Oluş",
+      "Sindirim ve Bağırsak Sağlığı",
+      "Bağışıklık Desteği",
+      "Enerji ve Yorgunluk",
+      "Cilt, Saç ve Tırnak Desteği",
+    ];
+
+    let categories = [];
+    let products = [];
+    let activeCategory = null;
+
+    PhyraMed.renderSkeletons(catGrid, 6, "skeleton-category");
+    PhyraMed.renderSkeletons(prodGrid, 6, "skeleton-product");
+
+    const popGrid = document.getElementById("popular-grid");
+    PhyraMed.renderSkeletons(popGrid, 4, "skeleton-product");
+
+    try {
+      const [categoryResponse, productResponse, popularResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/category/`),
+        fetch(`${API_BASE_URL}/products/`),
+        fetch(`${API_BASE_URL}/products/popular?limit=4`),
+      ]);
+
+      if (!categoryResponse.ok) throw new Error(`Kategori isteği başarısız: ${categoryResponse.status}`);
+      if (!productResponse.ok) throw new Error(`Ürün isteği başarısız: ${productResponse.status}`);
+      if (!popularResponse.ok) throw new Error(`Popüler ürün isteği başarısız: ${popularResponse.status}`);   // <-- YENİ
+
+      categories = await categoryResponse.json();
+      products = await productResponse.json();
+      const popularProducts = await popularResponse.json();
+
+      categories.sort((a, b) => {
+        const aIndex = CATEGORY_ORDER.indexOf(a.name);
+        const bIndex = CATEGORY_ORDER.indexOf(b.name);
+        return aIndex - bIndex;
+      });
+const POPULAR_CARD_COLORS = [
+      { bg: "linear-gradient(135deg, #1E3222, #16241A)", text: "#fff" },
+      { bg: "linear-gradient(135deg, #2E7D4F, #1E3222)", text: "#fff" },
+      { bg: "linear-gradient(135deg, #3F6B44, #29442E)", text: "#fff" },
+      { bg: "linear-gradient(135deg, #6B9A68, #3F6B44)", text: "#fff" },
+    ];
+
+    function renderPopularProducts(popularProducts) {
+      popGrid.innerHTML = "";
+
+      if (!popularProducts || popularProducts.length === 0) {
+        popGrid.innerHTML = `<p style="grid-column:1/-1;color:var(--muted);font-size:0.9rem;">Henüz yeterli arama verisi yok.</p>`;
+        return;
+      }
+
+      popularProducts.forEach((product, i) => {
+        const color = POPULAR_CARD_COLORS[i % POPULAR_CARD_COLORS.length];
+        const link = document.createElement("a");
+        link.className = "card popular-card";
+        link.href = `pages/urun.html?id=${encodeURIComponent(product.id)}&v=20260802-final2`;
+        link.style.background = color.bg;
+        link.style.color = color.text;
+        link.innerHTML = `
+          <span class="popular-rank">#${i + 1}</span>
+          <h3>${PhyraMed.escapeHTML(product.name)}</h3>
+          <p class="desc" style="color:inherit;opacity:0.9;">
+            ${PhyraMed.escapeHTML(product.usage_purpose || "")}
+          </p>
+          <span class="popular-search-count">🔍 ${product.search_count ?? 0} seçim</span>
+        `;
+        popGrid.appendChild(link);
+      });
+    }
+      renderCategories();
+      renderProducts(null);
+      renderPopularProducts(popularProducts);
+    } catch (error) {
+      console.error("Ana sayfa verileri yüklenemedi:", error);
+      renderLoadError();
+    }
+
+    function renderCategories() {
+      catGrid.innerHTML = "";
+
+      categories.forEach((category) => {
+        const categoryDesign = PhyraMed.CATEGORIES.find(
+          (item) => item.name === category.name
+        );
+
+        const icon =
+          categoryDesign?.icon ||
+          '<path d="M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z"/>';
+
+        const button = document.createElement("button");
+
+        button.className = "card category";
+        button.dataset.categoryId = category.id;
+
+        button.innerHTML = `
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            ${icon}
+          </svg>
+
+          <span>
+            ${PhyraMed.escapeHTML(category.name)}
+          </span>
+        `;
+
+        button.addEventListener("click", () => {
+          activeCategory =
+            activeCategory === category.id
+              ? null
+              : category.id;
+
+          [...catGrid.children].forEach((element) => {
+            element.classList.toggle(
+              "active",
+              Number(element.dataset.categoryId) === activeCategory
+            );
+          });
+
+          renderProducts(activeCategory);
+        });
+
+        catGrid.appendChild(button);
+      });
+    }
+
+    function renderProducts(categoryId) {
+      const filteredProducts = categoryId
+        ? products.filter(
+            (product) => product.category_id === categoryId
+          )
+        : products;
+
+      prodGrid.innerHTML = "";
+
+      if (filteredProducts.length === 0) {
+        prodGrid.innerHTML = `
+          <p
+            style="
+              grid-column:1/-1;
+              color:var(--muted);
+              font-size:0.9rem;
+            "
+          >
+            Bu kategoride henüz kayıtlı ürün bulunmuyor.
+          </p>
+        `;
+
+        return;
+      }
+
+      filteredProducts.forEach((product) => {
+        const evidenceLevel =
+          product.evidence_level || "Bekliyor";
+
+        const evidenceText =
+          PhyraMed.evidenceBadgeText(evidenceLevel);
+
+        const link = document.createElement("a");
+
+        link.className = "card product";
+        link.href =
+          `pages/urun.html?id=${encodeURIComponent(product.id)}&v=20260802-final2`;
+
+        link.innerHTML = `
+          <div class="card-top">
+            <h3>
+              ${PhyraMed.escapeHTML(product.name)}
+            </h3>
+
+            <span
+              class="
+                evidence-badge
+                evidence-${PhyraMed.escapeHTML(evidenceLevel)}
+              "
+            >
+              ${PhyraMed.escapeHTML(evidenceText)}
+            </span>
+          </div>
+
+          <p class="desc">
+            ${PhyraMed.escapeHTML(
+              product.usage_purpose ||
+              "Kullanım amacı bilgisi henüz eklenmedi."
+            )}
+          </p>
+        `;
+
+        prodGrid.appendChild(link);
+      });
+    }
+
+    function renderLoadError() {
+      catGrid.innerHTML = `
+        <p
+          style="
+            grid-column:1/-1;
+            color:var(--evidence-weak);
+            font-size:0.9rem;
+          "
+        >
+          Kategoriler yüklenemedi. Backend bağlantısını kontrol edin.
+        </p>
+      `;
+
+      prodGrid.innerHTML = `
+        <p style="grid-column:1/-1;color:var(--evidence-weak);font-size:0.9rem;">
+          Ürünler yüklenemedi. Lütfen daha sonra tekrar deneyin.
+        </p>
+      `;
+
+      popGrid.innerHTML = `
+        <p style="grid-column:1/-1;color:var(--evidence-weak);font-size:0.9rem;">
+          Popüler ürünler yüklenemedi.
+        </p>
+      `;
+    }
+
+    // --- Arama çubuğu ---
+    const searchInput = document.getElementById("search-input");
+    const searchResults = document.getElementById("search-results");
+    const searchClear = document.getElementById("search-clear");
+    let searchDebounceTimer = null;
+
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.trim();
+      searchClear.style.display = query ? "block" : "none";
+
+      clearTimeout(searchDebounceTimer);
+
+      if (!query) {
+        searchResults.style.display = "none";
+        searchResults.innerHTML = "";
+        return;
+      }
+
+      searchDebounceTimer = setTimeout(() => runSearch(query), 300);
+    });
+
+    searchClear.addEventListener("click", () => {
+      searchInput.value = "";
+      searchClear.style.display = "none";
+      searchResults.style.display = "none";
+      searchResults.innerHTML = "";
+      searchInput.focus();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search-section")) {
+        searchResults.style.display = "none";
+      }
+    });
+
+    async function runSearch(query) {
+      searchResults.style.display = "block";
+      searchResults.innerHTML = `<p class="search-loading">Aranıyor...</p>`;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error(`Arama isteği başarısız: ${res.status}`);
+
+        const result = await res.json();
+        renderSearchResults(result);
+      } catch (error) {
+        console.error("Arama başarısız:", error);
+        searchResults.innerHTML = `<p class="search-loading" style="color:var(--evidence-weak);">Arama sırasında bir hata oluştu.</p>`;
+      }
+    }
+
+    function renderSearchResults(result) {
+      const cats = result.categories || [];
+      const prods = result.products || [];
+
+if (cats.length === 0 && prods.length === 0) {
+        searchResults.innerHTML = `
+          <div class="search-no-result">
+            <p class="search-loading" style="margin:0 0 0.6rem;">Sonuç bulunamadı.</p>
+            <button type="button" class="btn-primary search-ask-ai-btn" id="search-ask-ai-btn">
+              🤖 Phyra Asistan'a sor
+            </button>
+          </div>
+        `;
+
+        const askBtn = document.getElementById("search-ask-ai-btn");
+        askBtn.addEventListener("click", () => {
+          const currentQuery = searchInput.value.trim();
+          searchResults.style.display = "none";
+          PhyraMed.askChatbot(`${currentQuery} nedir, ne işe yarar?`);
+        });
+
+        return;
+      }
+
+      let html = "";
+
+      if (cats.length > 0) {
+        html += `<div class="search-group-label">Kategoriler</div>`;
+        cats.forEach((cat) => {
+          html += `
+            <a class="search-result-row" data-category-id="${cat.id}">
+              📁 ${PhyraMed.escapeHTML(cat.name)}
+            </a>
+          `;
+        });
+      }
+
+      if (prods.length > 0) {
+        html += `<div class="search-group-label">Ürünler</div>`;
+        prods.forEach((p) => {
+          html += `
+            <a
+              class="search-result-row"
+              data-product-id="${p.id}"
+              href="pages/urun.html?id=${encodeURIComponent(p.id)}&v=20260802-final2"
+            >
+              🌿 ${PhyraMed.escapeHTML(p.name)}
+            </a>
+          `;
+        });
+      }
+
+      searchResults.innerHTML = html;
+
+      searchResults.querySelectorAll("[data-category-id]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const catId = Number(el.dataset.categoryId);
+          if (!Number.isInteger(catId) || catId <= 0) return;
+
+          activeCategory = catId;
+          searchResults.style.display = "none";
+          searchInput.value = "";
+          searchClear.style.display = "none";
+
+          [...catGrid.children].forEach((element) => {
+            element.classList.toggle("active", Number(element.dataset.categoryId) === activeCategory);
+          });
+
+          try {
+            const response = await fetch(
+              `${API_BASE_URL}/category/${encodeURIComponent(catId)}/search-selection`,
+              {
+                method: "POST",
+                keepalive: true,
+              }
+            );
+            if (!response.ok) {
+              throw new Error(`Kategori arama seçimi kaydedilemedi: ${response.status}`);
+            }
+          } catch (error) {
+            console.error("Kategori arama seçimi kaydedilemedi:", error);
+          } finally {
+            renderProducts(activeCategory);
+            document.getElementById("product-grid").scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+
+      searchResults.querySelectorAll("[data-product-id]").forEach((el) => {
+        el.addEventListener("click", async (event) => {
+          event.preventDefault();
+
+          const productId = Number(el.dataset.productId);
+          const destination = el.href;
+
+          try {
+            const response = await fetch(
+              `${API_BASE_URL}/products/${encodeURIComponent(productId)}/search-selection`,
+              {
+                method: "POST",
+                keepalive: true,
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`Arama seçimi kaydedilemedi: ${response.status}`);
+            }
+          } catch (error) {
+            console.error("Arama seçimi kaydedilemedi:", error);
+          } finally {
+            window.location.assign(destination);
+          }
+        });
+      });
+    }
+  });
+  </script>
+</body>
+</html>

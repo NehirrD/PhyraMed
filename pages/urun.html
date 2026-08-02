@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ürün Detayı — PhyraMed</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2329442E' d='M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/data.js" defer></script>
+  <script src="../js/main.js" defer></script>
+</head>
+<body data-home="../index.html" data-profil="profil.html" data-tani="gorsel-tanima.html">
+
+  <header class="navbar"></header>
+
+  <div class="product-header">
+    <a href="../index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Kategorilere dön
+    </a>
+    <div class="card-top" id="product-title-row"></div>
+    <p id="product-purpose" style="max-width:38rem;"></p>
+  </div>
+
+  <div class="product-layout">
+    <div id="product-main"></div>
+    <aside id="product-aside"></aside>
+  </div>
+
+  <footer class="site-footer"></footer>
+
+  <div class="chatbot-wrap"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const mainEl = document.getElementById("product-main");
+    const asideEl = document.getElementById("product-aside");
+    const titleRowEl = document.getElementById("product-title-row");
+    const purposeEl = document.getElementById("product-purpose");
+
+    const API_BASE_URL =
+      PhyraMed.API_BASE_URL || "http://127.0.0.1:8000";
+
+    PhyraMed.renderSkeletons(mainEl, 2, "skeleton-panel");
+    PhyraMed.renderSkeletons(asideEl, 1, "skeleton-panel");
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = Number(params.get("id"));
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+      renderNotFound(
+        "Geçerli bir ürün seçilmedi. Kategorilere dönerek bir ürün seçebilirsiniz."
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/products/${encodeURIComponent(productId)}`
+      );
+
+      if (response.status === 404) {
+        renderNotFound(
+          "Aradığınız takviye veritabanımızda mevcut değil ya da kaldırılmış olabilir."
+        );
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          `Ürün detayı isteği başarısız: ${response.status}`
+        );
+      }
+
+      const product = await response.json();
+      renderProduct(product);
+    } catch (error) {
+      console.error("Ürün detayı yüklenemedi:", error);
+      renderLoadError();
+    }
+
+    function renderNotFound(message) {
+      document.title = "Ürün bulunamadı — PhyraMed";
+      titleRowEl.innerHTML = `
+        <h1 style="font-size:1.5rem;color:var(--forest-900);">Ürün bulunamadı</h1>
+      `;
+      purposeEl.textContent = message;
+      asideEl.style.display = "none";
+      mainEl.innerHTML = `
+        <section class="panel">
+          <p style="margin:0 0 1rem;">Kategorilerden birini seçerek mevcut ürünlere göz atabilirsiniz.</p>
+          <a href="../index.html" class="nav-cta" style="display:inline-flex;">Kategorilere dön</a>
+        </section>
+      `;
+    }
+
+    function renderLoadError() {
+      document.title = "Ürün yüklenemedi — PhyraMed";
+      titleRowEl.innerHTML = `
+        <h1 style="font-size:1.5rem;color:var(--forest-900);">Ürün bilgisi yüklenemedi</h1>
+      `;
+      purposeEl.textContent = "Backend bağlantısı sırasında bir sorun oluştu.";
+      asideEl.style.display = "none";
+      mainEl.innerHTML = `
+        <section class="panel">
+          <p style="margin:0 0 1rem;color:var(--evidence-weak);">
+            Ürün bilgilerine şu anda ulaşılamıyor. Backend'in çalıştığını kontrol edip sayfayı yeniden deneyin.
+          </p>
+          <button type="button" class="btn-primary" onclick="window.location.reload()">Tekrar dene</button>
+        </section>
+      `;
+    }
+
+    function renderProduct(product) {
+      const esc = PhyraMed.escapeHTML;
+      const evidenceLevel = product.evidence_level || "Bekliyor";
+      const evidenceText = PhyraMed.evidenceBadgeText(evidenceLevel);
+      const statusNote = PhyraMed.evidenceStatusNote(evidenceLevel);
+      const risks = Array.isArray(product.risks) ? product.risks : [];
+      const interactions = Array.isArray(product.interactions) ? product.interactions : [];
+      const sources = Array.isArray(product.sources) ? product.sources : [];
+
+      document.title = `${product.name} — PhyraMed`;
+      asideEl.style.display = "";
+
+      titleRowEl.innerHTML = `
+        <h1 style="font-size:1.7rem;color:var(--forest-900);">${esc(product.name)}</h1>
+        <span class="evidence-badge evidence-${esc(evidenceLevel)}">Kanıt durumu: ${esc(evidenceText)}</span>
+      `;
+
+      purposeEl.textContent = product.usage_purpose || "Kullanım amacı bilgisi henüz eklenmedi.";
+
+      const summaryText = product.expert_opinion_summary
+        ? esc(product.expert_opinion_summary)
+        : "Bilimsel kanıt özeti henüz hazırlanmadı.";
+
+      const statusNoteHTML = statusNote
+        ? `<p style="font-size:0.85rem;color:var(--muted);margin:0 0 0.75rem;font-style:italic;">${esc(statusNote)}</p>`
+        : "";
+
+      const risksHTML = risks.length
+        ? `<ul>${risks.map((risk) => {
+            const severity = risk.severity || "Belirtilmedi";
+            return `<li>${esc(risk.description || "Risk açıklaması bulunmuyor.")}
+              <span style="font-size:0.75rem;opacity:0.75;">(${esc(severity)} şiddet)</span></li>`;
+          }).join("")}</ul>`
+        : `<p style="font-size:0.88rem;color:var(--muted);margin:0;">
+            Bu kayıt için risk bilgisi henüz tamamlanmadı. Bilgi bulunmaması ürünün risksiz olduğu anlamına gelmez.
+          </p>`;
+
+      const interactionsHTML = interactions.length
+        ? `<ul>${interactions.map((interaction) => {
+            const interactsWith = interaction.interacts_with || "Etkileşen ürün veya ilaç";
+            const description = interaction.description || "Etkileşim açıklaması bulunmuyor.";
+            return `<li><strong>${esc(interactsWith)}:</strong> ${esc(description)}</li>`;
+          }).join("")}</ul>`
+        : `<p style="font-size:0.88rem;color:var(--muted);margin:0;">
+            Bu kayıt için etkileşim bilgisi henüz tamamlanmadı. İlaç veya başka takviye kullanan kişilerin sağlık profesyoneline danışması gerekir.
+          </p>`;
+
+      mainEl.innerHTML = `
+        <div class="disclaimer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
+          </svg>
+          <span>
+            <strong>Bilgilendirme amaçlıdır, tıbbi tavsiye değildir.</strong>
+            Aşağıdaki bilgiler bilimsel kaynaklardan derlenmiştir; kullanmadan önce bir sağlık profesyoneline danışın.
+          </span>
+        </div>
+
+        <section class="panel">
+          <h2>Bilimsel kanıt özeti</h2>
+          ${statusNoteHTML}
+          <p style="font-size:0.92rem;color:var(--muted);margin:0;">${summaryText}</p>
+        </section>
+
+        <section class="panel risk">
+          <h2>⚠ Riskler ve olası yan etkiler</h2>
+          ${risksHTML}
+        </section>
+
+        <section class="panel">
+          <h2>Etkileşimler ve önemli uyarılar</h2>
+          ${interactionsHTML}
+        </section>
+
+        <section class="panel ai-summary-panel" id="ai-summary-panel">
+          <h2>📊 Yorum Analizi</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin:0 0 0.8rem;">
+            Bu analiz kullanıcı deneyimlerini özetler; bilimsel kanıt, tanı veya tıbbi tavsiye değildir.
+          </p>
+          <div id="ai-summary-content"><p class="search-loading">Yorumlar analiz ediliyor...</p></div>
+        </section>
+
+        <section class="panel comments-panel">
+          <h2>💬 Kullanıcı yorumları</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin:0 0 0.8rem;">
+            Yorumlar kullanıcı beyanıdır; doğrulanmış sağlık bilgisi olarak değerlendirilmemelidir.
+          </p>
+          <div id="comments-list"><p class="search-loading">Yorumlar yükleniyor...</p></div>
+
+          <form id="comment-form" class="comment-form">
+            <input type="text" id="comment-username" placeholder="Adınız (boş bırakılabilir)" maxlength="60" />
+            <select id="comment-rating">
+              <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+              <option value="4">⭐⭐⭐⭐ (4)</option>
+              <option value="3">⭐⭐⭐ (3)</option>
+              <option value="2">⭐⭐ (2)</option>
+              <option value="1">⭐ (1)</option>
+            </select>
+            <textarea id="comment-text" placeholder="Yorumunuzu yazın..." maxlength="500" required></textarea>
+            <button type="submit" class="btn-primary">Yorum Gönder</button>
+            <p id="comment-error" style="color:var(--evidence-weak);font-size:0.85rem;margin:0;display:none;"></p>
+          </form>
+        </section>
+      `;
+
+      const sourcesHTML = sources.length
+        ? sources.map((source) => {
+            const title = source.title || "Kaynak başlığı belirtilmedi";
+            const type = source.type || "Kaynak türü belirtilmedi";
+            const safeUrl = getSafeHttpUrl(source.url);
+            const titleHTML = safeUrl
+              ? `<a href="${esc(safeUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--forest-700);text-decoration:underline;">${esc(title)}</a>`
+              : `<span>${esc(title)}</span>`;
+            return `<div class="source-row">${titleHTML}<span class="source-tag">${esc(type)}</span></div>`;
+          }).join("")
+        : `<p style="font-size:0.85rem;color:var(--muted);margin:0;">
+            Bu kayıt için henüz kaynak eklenmedi; içerik doğrulanmış olarak etiketlenemez.
+          </p>`;
+
+      asideEl.innerHTML = `
+        <section class="panel">
+          <h2>📚 Bilimsel ve resmî kaynaklar</h2>
+          ${sourcesHTML}
+        </section>
+      `;
+
+      loadComments(productId);
+      setupCommentForm(productId);
+      loadAiSummary(productId);
+    }
+
+    function getSafeHttpUrl(value) {
+      if (!value) return null;
+      try {
+        const url = new URL(value);
+        if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+        return url.href;
+      } catch {
+        return null;
+      }
+    }
+
+    async function loadComments(productId) {
+      const listEl = document.getElementById("comments-list");
+      if (!listEl) return;
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/comment/${encodeURIComponent(productId)}?_=${Date.now()}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) throw new Error(`Yorumlar yüklenemedi: ${res.status}`);
+        const comments = await res.json();
+        renderComments(comments);
+      } catch (error) {
+        console.error("Yorumlar yüklenemedi:", error);
+        listEl.innerHTML = `<p class="search-loading" style="color:var(--evidence-weak);">Yorumlar yüklenemedi.</p>`;
+      }
+    }
+
+    function renderComments(comments) {
+      const listEl = document.getElementById("comments-list");
+      const esc = PhyraMed.escapeHTML;
+      if (!comments || comments.length === 0) {
+        listEl.innerHTML = `<p class="search-loading">Henüz yorum yok. İlk yorumu sen yaz!</p>`;
+        return;
+      }
+      listEl.innerHTML = comments.map((c) => {
+        const stars = "⭐".repeat(Math.max(0, Math.min(5, c.rating || 0)));
+        const date = c.created_at ? new Date(c.created_at).toLocaleDateString("tr-TR") : "";
+        return `
+          <div class="comment-row">
+            <div class="comment-top">
+              <strong>${esc(c.user_name || "Anonim Kullanıcı")}</strong>
+              <span class="comment-stars">${stars}</span>
+              <span class="comment-date">${esc(date)}</span>
+            </div>
+            <p class="comment-text">${esc(c.text)}</p>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function setupCommentForm(productId) {
+      const form = document.getElementById("comment-form");
+      if (!form) return;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById("comment-error");
+        errorEl.style.display = "none";
+        const userNameInput = document.getElementById("comment-username").value.trim();
+        const rating = Number(document.getElementById("comment-rating").value);
+        const text = document.getElementById("comment-text").value.trim();
+        if (!text) {
+          errorEl.textContent = "Yorum metni boş olamaz.";
+          errorEl.style.display = "block";
+          return;
+        }
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        try {
+          const res = await fetch(`${API_BASE_URL}/comment/${encodeURIComponent(productId)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_name: userNameInput || "Anonim Kullanıcı",
+              text,
+              rating,
+            }),
+          });
+          if (!res.ok) {
+            const payload = await res.json().catch(() => null);
+            const detail = Array.isArray(payload?.detail)
+              ? payload.detail.map((item) => item?.msg).filter(Boolean).join(" ")
+              : payload?.detail;
+            throw new Error(detail || `Yorum gönderilemedi: ${res.status}`);
+          }
+          form.reset();
+          await Promise.all([
+            loadComments(productId),
+            loadAiSummary(productId),
+          ]);
+        } catch (error) {
+          console.error("Yorum gönderilemedi:", error);
+          errorEl.textContent = error.message || "Yorum gönderilirken bir hata oluştu. Lütfen tekrar deneyin.";
+          errorEl.style.display = "block";
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    }
+
+    async function loadAiSummary(productId) {
+      const contentEl = document.getElementById("ai-summary-content");
+      if (!contentEl) return;
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/analysis/comments/${encodeURIComponent(productId)}/deep?use_groq=true&_=${Date.now()}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) throw new Error(`Yorum analizi alınamadı: ${res.status}`);
+        const data = await res.json();
+        renderAiSummary(data);
+      } catch (error) {
+        console.error("Yorum analizi yüklenemedi:", error);
+        contentEl.innerHTML = `<p class="search-loading" style="color:var(--evidence-weak);">Yorum analizi şu anda oluşturulamıyor.</p>`;
+      }
+    }
+
+    function renderAiSummary(data) {
+      const contentEl = document.getElementById("ai-summary-content");
+      const esc = PhyraMed.escapeHTML;
+      if (!data.sentiment_distribution || data.sentiment_distribution.total_comments === 0) {
+        contentEl.innerHTML = `<p class="search-loading">Henüz analiz edilecek yeterli yorum yok.</p>`;
+        return;
+      }
+      const dist = data.sentiment_distribution;
+      const posPct = Math.round(dist.positive.ratio * 100);
+      const negPct = Math.round(dist.negative.ratio * 100);
+      const neuPct = Math.round(dist.neutral.ratio * 100);
+      const sideEffectsHTML = (data.side_effects && data.side_effects.length > 0)
+        ? `
+          <div class="ai-side-effects">
+            <strong>Kullanıcıların bildirdiği olası yan etkiler:</strong>
+            <ul>${data.side_effects.slice(0, 5).map((s) => `<li>${esc(s.effect)} (${s.count} kez)</li>`).join("")}</ul>
+          </div>
+        `
+        : "";
+      const sampleWarningHTML = data.sample_size_warning
+        ? `<p class="analysis-sample-warning">${esc(data.sample_size_warning)}</p>`
+        : "";
+      const method = String(data.method || "");
+      const methodLabel = method.includes("groq")
+        ? "Groq destekli dil özeti · Sayısal sonuçlar kural tabanlıdır"
+        : "Kural tabanlı güvenli özet · Groq kullanılamadı veya etkinleşmedi";
+      contentEl.innerHTML = `
+        <p class="ai-summary-text">${esc(data.summary_text || "")}</p>
+        <p style="font-size:0.76rem;color:var(--muted);margin:0.45rem 0;">${esc(methodLabel)}</p>
+        ${sampleWarningHTML}
+        <div class="sentiment-bar">
+          <div class="sentiment-segment positive" style="width:${posPct}%;" title="Olumlu %${posPct}"></div>
+          <div class="sentiment-segment neutral" style="width:${neuPct}%;" title="Nötr %${neuPct}"></div>
+          <div class="sentiment-segment negative" style="width:${negPct}%;" title="Olumsuz %${negPct}"></div>
+        </div>
+        <div class="sentiment-legend">
+          <span>🟢 Olumlu %${posPct}</span>
+          <span>⚪ Nötr %${neuPct}</span>
+          <span>🔴 Olumsuz %${negPct}</span>
+        </div>
+        ${sideEffectsHTML}
+      `;
+    }
+  });
+</script>
+</body>
+</html>

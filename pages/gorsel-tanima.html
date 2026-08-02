@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitki Tanı — PhyraMed</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2329442E' d='M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/data.js" defer></script>
+  <script src="../js/main.js" defer></script>
+</head>
+<body data-home="../index.html" data-profil="profil.html" data-tani="gorsel-tanima.html">
+
+  <header class="navbar"></header>
+
+  <main class="recognize-page">
+    <a href="../index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Kategorilere dön
+    </a>
+
+    <div class="recognize-heading">
+      <span class="ai-live-badge">
+        <span class="ai-live-dot" aria-hidden="true"></span>
+        Gerçek zamanlı AI analizi
+      </span>
+      <h1>Bitki Tanı</h1>
+      <p>Net bir bitki fotoğrafı yükle. PhyraMed görseli analiz eder ve yalnızca bilgi tabanında gerçekten eşleşen ürünleri gösterir.</p>
+    </div>
+
+    <div class="disclaimer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      <span><strong>Bilgilendirme amaçlıdır, tıbbi tavsiye değildir.</strong> Görsel tanıma sonucu bir AI tahminidir; bitkiyi tüketmeden veya cilde uygulamadan önce uzman görüşü alın.</span>
+    </div>
+
+    <label class="dropzone" id="dropzone" for="photo-input">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <div><strong>Fotoğraf yükle</strong> ya da bu alana sürükle</div>
+      <p class="hint">JPEG, PNG veya WEBP · En fazla 5 MB · Tek ve net bir bitki</p>
+      <input
+        type="file"
+        id="photo-input"
+        accept="image/jpeg,image/png,image/webp"
+        capture="environment"
+        aria-describedby="upload-help"
+      />
+    </label>
+    <p id="upload-help" class="sr-only">JPEG, PNG veya WEBP biçiminde en fazla 5 MB boyutunda tek bir bitki fotoğrafı yükleyin.</p>
+
+    <div class="preview-wrap" id="preview-wrap" style="display:none;">
+      <img id="preview-img" alt="Yüklenen bitki fotoğrafı önizlemesi" />
+      <p class="file-meta" id="file-meta"></p>
+      <div class="preview-actions">
+        <button type="button" class="btn-primary" id="analyze-btn">AI ile Analiz Et</button>
+        <button type="button" class="btn-ghost" id="reset-btn">Başka fotoğraf seç</button>
+      </div>
+      <div class="analyzing" id="analyzing" style="display:none;" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Görsel analiz ediliyor ve PhyraMed kataloğuyla eşleştiriliyor...</span>
+      </div>
+    </div>
+
+    <div id="result-wrap" aria-live="polite"></div>
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <div class="chatbot-wrap"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const dropzone = document.getElementById("dropzone");
+      const input = document.getElementById("photo-input");
+      const previewWrap = document.getElementById("preview-wrap");
+      const previewImg = document.getElementById("preview-img");
+      const fileMeta = document.getElementById("file-meta");
+      const analyzeBtn = document.getElementById("analyze-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const analyzing = document.getElementById("analyzing");
+      const resultWrap = document.getElementById("result-wrap");
+
+      const MAX_FILE_SIZE = 5 * 1024 * 1024;
+      const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+      const REQUEST_TIMEOUT_MS = 60000;
+
+      let selectedFile = null;
+      let previewObjectURL = null;
+      let activeController = null;
+
+      ["dragover", "dragenter"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.add("dragover");
+        });
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.remove("dragover");
+        });
+      });
+
+      dropzone.addEventListener("drop", (event) => {
+        const file = event.dataTransfer.files?.[0];
+        if (file) handleFile(file);
+      });
+
+      input.addEventListener("change", () => {
+        const file = input.files?.[0];
+        if (file) handleFile(file);
+      });
+
+      analyzeBtn.addEventListener("click", analyzeSelectedImage);
+      resetBtn.addEventListener("click", resetSelection);
+
+      function handleFile(file) {
+        clearUploadError();
+        clearResult();
+
+        if (!ALLOWED_TYPES.has(file.type)) {
+          showUploadError("Sadece JPEG, PNG veya WEBP biçimindeki fotoğraflar yüklenebilir.");
+          input.value = "";
+          return;
+        }
+
+        if (file.size === 0) {
+          showUploadError("Seçilen dosya boş. Lütfen başka bir fotoğraf seç.");
+          input.value = "";
+          return;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+          showUploadError(`Dosya çok büyük (${sizeMB} MB). En fazla 5 MB boyutunda bir fotoğraf yükleyebilirsin.`);
+          input.value = "";
+          return;
+        }
+
+        abortActiveRequest();
+        revokePreviewURL();
+
+        selectedFile = file;
+        previewObjectURL = URL.createObjectURL(file);
+        previewImg.src = previewObjectURL;
+        previewWrap.style.display = "block";
+        dropzone.style.display = "none";
+        fileMeta.textContent = `${file.name} · ${formatFileSize(file.size)}`;
+        analyzeBtn.focus();
+      }
+
+      async function analyzeSelectedImage() {
+        if (!selectedFile) {
+          showUploadError("Önce analiz edilecek bir fotoğraf seç.");
+          return;
+        }
+
+        abortActiveRequest();
+        clearResult();
+        setBusy(true);
+
+        const controller = new AbortController();
+        activeController = controller;
+        const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        const startedAt = performance.now();
+
+        try {
+          const formData = new FormData();
+          formData.append("file", selectedFile, selectedFile.name);
+
+          const configuredBase = window.PhyraMed?.API_BASE_URL || "http://127.0.0.1:8000";
+          const isHttpPage = window.location.protocol === "http:" || window.location.protocol === "https:";
+          const isStandaloneFrontend = ["5500", "5501"].includes(window.location.port);
+          const apiBase = isHttpPage && !isStandaloneFrontend
+            ? window.location.origin
+            : configuredBase;
+
+          const response = await fetch(`${apiBase}/products/identify`, {
+            method: "POST",
+            body: formData,
+            signal: controller.signal,
+          });
+
+          const payload = await readJsonSafely(response);
+
+          if (!response.ok) {
+            throw new Error(payload?.detail || `Analiz isteği başarısız oldu (${response.status}).`);
+          }
+
+          const elapsedSeconds = (performance.now() - startedAt) / 1000;
+          renderResult(payload, elapsedSeconds);
+        } catch (error) {
+          if (error.name === "AbortError") {
+            renderError("Analiz süresi aşıldı. İnternet bağlantısını kontrol edip tekrar dene.");
+          } else {
+            console.error("Görsel tanıma hatası:", error);
+            renderError(error.message || "Görsel analiz sırasında beklenmeyen bir sorun oluştu.");
+          }
+        } finally {
+          window.clearTimeout(timeoutId);
+          if (activeController === controller) activeController = null;
+          setBusy(false);
+        }
+      }
+
+      function renderResult(result, elapsedSeconds) {
+        const esc = window.PhyraMed.escapeHTML;
+        const status = String(result.status || "uncertain");
+        const confidence = String(result.confidence || "düşük").toLocaleLowerCase("tr-TR");
+        const confidenceLabel = {
+          "yüksek": "Yüksek güven",
+          "orta": "Orta güven",
+          "düşük": "Düşük güven",
+        }[confidence] || "Düşük güven";
+        const confidenceClass = {
+          "yüksek": "high",
+          "orta": "medium",
+          "düşük": "low",
+        }[confidence] || "low";
+        const quality = String(result.image_quality || "yetersiz").toLocaleLowerCase("tr-TR");
+        const qualityLabel = {
+          "yeterli": "Görsel kalite: Yeterli",
+          "sınırlı": "Görsel kalite: Sınırlı",
+          "yetersiz": "Görsel kalite: Yetersiz",
+        }[quality] || "Görsel kalite: Yetersiz";
+
+        if (status === "unavailable") {
+          renderError(result.description || "Görsel analiz servisi şu anda kullanılamıyor.");
+          return;
+        }
+
+        if (status === "not_plant") {
+          resultWrap.innerHTML = `
+            <section class="result-card result-card--neutral">
+              <div class="result-heading-row">
+                <div>
+                  <span class="result-eyebrow">AI GÖRSEL KONTROLÜ</span>
+                  <h2>Bitki tespit edilemedi</h2>
+                </div>
+                <span class="confidence confidence--low">${esc(confidenceLabel)}</span>
+              </div>
+              <p>${esc(result.description || "Görselde güvenilir biçimde tanımlanabilen bir bitki bulunamadı.")}</p>
+              <div class="analysis-meta">
+                <span>Görsel AI analizi</span>
+                <span>${esc(elapsedSeconds.toFixed(1))} sn</span>
+                <span>${esc(qualityLabel)}</span>
+              </div>
+              <p class="result-disclaimer">${esc(result.disclaimer || "Bu sonuç bir AI tahminidir.")}</p>
+            </section>
+          `;
+          return;
+        }
+
+        const displayName = esc(result.identified_name || "Belirlenemedi");
+        const nameDetails = [result.identified_name_en, result.scientific_name]
+          .filter(Boolean)
+          .map((value) => esc(value))
+          .join(" · ");
+        const matchedProducts = Array.isArray(result.matched_products)
+          ? result.matched_products
+          : [];
+        const visibleParts = Array.isArray(result.visible_parts)
+          ? result.visible_parts.filter(Boolean)
+          : [];
+        const features = Array.isArray(result.distinguishing_features)
+          ? result.distinguishing_features.filter(Boolean)
+          : [];
+        const alternatives = Array.isArray(result.alternative_candidates)
+          ? result.alternative_candidates.filter((item) => item && item.name)
+          : [];
+        const catalogStatus = String(result.catalog_match_status || "not_applicable");
+        const needsMoreEvidence = catalogStatus === "needs_more_evidence"
+          || Boolean(result.requires_additional_photo)
+          || status === "uncertain";
+        const isCatalogVerified = (
+          catalogStatus === "matched"
+          && matchedProducts.length > 0
+          && result.verification?.accepted === true
+        );
+        const resultBadgeLabel = isCatalogVerified
+          ? `${confidenceLabel} · Doğrulandı`
+          : needsMoreEvidence
+            ? "Doğrulama gerekli"
+            : catalogStatus === "not_found"
+              ? "Katalog dışı tahmin"
+              : "Doğrulanmadı";
+        const resultBadgeClass = isCatalogVerified
+          ? confidenceClass
+          : needsMoreEvidence
+            ? "medium"
+            : "unverified";
+        const resultEyebrow = isCatalogVerified
+          ? "AI BOTANİK TAHMİNİ · DOĞRULANDI"
+          : "AI BOTANİK TAHMİNİ · DOĞRULANMADI";
+
+        const detailsHTML = (visibleParts.length || features.length)
+          ? `
+              <div class="botanical-evidence">
+                ${visibleParts.length ? `
+                  <div>
+                    <strong>Görüntüde seçilen bölümler</strong>
+                    <span>${visibleParts.map((item) => esc(item)).join(", ")}</span>
+                  </div>
+                ` : ""}
+                ${features.length ? `
+                  <div>
+                    <strong>Ayırt edici görsel özellikler</strong>
+                    <ul>${features.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>
+                  </div>
+                ` : ""}
+              </div>
+            `
+          : "";
+
+        const alternativesHTML = alternatives.length
+          ? `
+              <div class="alternative-note">
+                <strong>Modelin değerlendirdiği alternatifler</strong>
+                <span>${alternatives.map((item) => {
+                  const scientific = item.scientific_name ? ` (${esc(item.scientific_name)})` : "";
+                  return `${esc(item.name)}${scientific}`;
+                }).join(", ")}</span>
+              </div>
+            `
+          : "";
+
+        const productHTML = matchedProducts.length
+          ? `
+              <div class="catalog-match-block">
+                <div class="catalog-match-title">
+                  <span class="catalog-check" aria-hidden="true">✓</span>
+                  İki aşamalı katalog doğrulaması tamamlandı
+                </div>
+                <p class="match-explanation">${esc(result.match_explanation || "Tür düzeyindeki tahmin ikinci görsel kontrolle doğrulandı.")}</p>
+                ${matchedProducts.map(renderMatchedProduct).join("")}
+              </div>
+            `
+          : `
+              <div class="catalog-empty-note ${needsMoreEvidence ? "catalog-empty-note--warning" : ""}">
+                <strong>${needsMoreEvidence ? "Güvenli ürün bağlantısı oluşturulmadı." : "PhyraMed kataloğunda doğrulanmış eşleşme bulunamadı."}</strong>
+                <span>${esc(result.match_explanation || "Botanik tahmin gösterildi; ürün bilgisi veya kullanım önerisi üretilmedi.")}</span>
+                <span>Üstteki bitki adı yalnızca model tahminidir; doğrulanmış tür tanısı olarak kullanılmamalıdır.</span>
+                ${needsMoreEvidence ? `<span>Yaprak, çiçek ve gövdeyi birlikte gösteren daha net bir fotoğraf yükleyin.</span>` : ""}
+              </div>
+            `;
+
+        resultWrap.innerHTML = `
+          <section class="result-card ${!isCatalogVerified ? "result-card--uncertain" : ""}">
+            <div class="result-heading-row">
+              <div>
+                <span class="result-eyebrow">${esc(resultEyebrow)}</span>
+                <h2>${displayName}</h2>
+                ${nameDetails ? `<p class="scientific-line">${nameDetails}</p>` : ""}
+              </div>
+              <span class="confidence confidence--${resultBadgeClass}">${esc(resultBadgeLabel)}</span>
+            </div>
+
+            <p class="visual-description">${esc(result.description || "Görsel özelliklere göre bir botanik tahmin oluşturuldu.")}</p>
+
+            <div class="analysis-meta">
+              <span>Açık uçlu botanik analiz</span>
+              <span>${esc(elapsedSeconds.toFixed(1))} sn</span>
+              <span>${esc(qualityLabel)}</span>
+              <span>Model tahmin güveni: ${esc(confidence)}</span>
+              <span>${isCatalogVerified ? "Katalog doğrulaması: Tamamlandı" : "Katalog doğrulaması: Yok"}</span>
+            </div>
+
+            ${detailsHTML}
+            ${alternativesHTML}
+            ${productHTML}
+
+            <p class="result-disclaimer">${esc(result.disclaimer || "Bu sonuç bir AI tahminidir; kesin teşhis değildir.")}</p>
+          </section>
+        `;
+
+        resultWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function renderMatchedProduct(product) {
+        const esc = window.PhyraMed.escapeHTML;
+        const productId = Number(product.id);
+        const safeId = Number.isInteger(productId) && productId > 0 ? productId : null;
+        const evidenceText = window.PhyraMed.evidenceBadgeText(product.evidence_level);
+        const categoryName = product.category?.name || "PhyraMed ürünü";
+
+        return `
+          <article class="matched-product-card">
+            <div class="matched-product-copy">
+              <span class="matched-product-category">${esc(categoryName)}</span>
+              <h3>${esc(product.name || "İlgili ürün")}</h3>
+              <p>${esc(product.usage_purpose || "Bu ürün için bilgi tabanındaki kayıt incelenebilir.")}</p>
+              <span class="evidence-mini">Kanıt durumu: ${esc(evidenceText)}</span>
+            </div>
+            ${safeId ? `<a href="urun.html?id=${encodeURIComponent(safeId)}&v=20260802-final2" class="btn-primary matched-product-link">Ürün bilgisini incele</a>` : ""}
+          </article>
+        `;
+      }
+
+      function renderError(message) {
+        const esc = window.PhyraMed.escapeHTML;
+        resultWrap.innerHTML = `
+          <section class="result-card result-card--error" role="alert">
+            <span class="result-eyebrow">ANALİZ TAMAMLANAMADI</span>
+            <h2>Görsel analiz edilemedi</h2>
+            <p>${esc(message)}</p>
+            <p class="result-disclaimer">Fotoğrafın net, tek bitki içeren ve 5 MB'tan küçük olduğundan emin ol.</p>
+          </section>
+        `;
+      }
+
+      function showUploadError(message) {
+        let errorElement = document.getElementById("upload-error");
+
+        if (!errorElement) {
+          errorElement = document.createElement("p");
+          errorElement.id = "upload-error";
+          errorElement.className = "upload-error";
+          errorElement.setAttribute("role", "alert");
+          dropzone.insertAdjacentElement("afterend", errorElement);
+        }
+
+        errorElement.textContent = message;
+      }
+
+      function clearUploadError() {
+        document.getElementById("upload-error")?.remove();
+      }
+
+      function clearResult() {
+        resultWrap.innerHTML = "";
+      }
+
+      function setBusy(isBusy) {
+        analyzing.style.display = isBusy ? "flex" : "none";
+        analyzeBtn.disabled = isBusy;
+        resetBtn.disabled = isBusy;
+        input.disabled = isBusy;
+        analyzeBtn.textContent = isBusy ? "Analiz ediliyor..." : "AI ile Analiz Et";
+      }
+
+      function abortActiveRequest() {
+        if (activeController) {
+          activeController.abort();
+          activeController = null;
+        }
+      }
+
+      function revokePreviewURL() {
+        if (previewObjectURL) {
+          URL.revokeObjectURL(previewObjectURL);
+          previewObjectURL = null;
+        }
+      }
+
+      function resetSelection() {
+        abortActiveRequest();
+        revokePreviewURL();
+        selectedFile = null;
+        input.value = "";
+        previewImg.removeAttribute("src");
+        fileMeta.textContent = "";
+        previewWrap.style.display = "none";
+        dropzone.style.display = "flex";
+        clearResult();
+        clearUploadError();
+        setBusy(false);
+        dropzone.focus?.();
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      }
+
+      async function readJsonSafely(response) {
+        const text = await response.text();
+        if (!text) return {};
+
+        try {
+          return JSON.parse(text);
+        } catch {
+          return { detail: text };
+        }
+      }
+
+      window.addEventListener("beforeunload", () => {
+        abortActiveRequest();
+        revokePreviewURL();
+      });
+    });
+  </script>
+</body>
+</html>

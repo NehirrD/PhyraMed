@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profilim — PhyraMed</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2329442E' d='M12 2C8 7 5 10.5 5 14.5A7 7 0 0 0 19 14.5C19 10.5 16 7 12 2z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/data.js" defer></script>
+  <script src="../js/main.js" defer></script>
+</head>
+<body data-home="../index.html" data-profil="profil.html" data-tani="gorsel-tanima.html">
+
+  <header class="navbar"></header>
+
+  <main class="profile-page">
+    <div class="profile-head">
+      <div class="avatar">A</div>
+      <div>
+        <h1>Ahmet Kılıç</h1>
+        <p class="since">Üyelik: Haziran 2026</p>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-bottom:1rem;">
+      <h2 style="font-size:1.05rem;">Geçmiş Aramalar</h2>
+    </div>
+    <div id="history-list"></div>
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <div class="chatbot-wrap"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const list = document.getElementById("history-list");
+
+      PhyraMed.renderSkeletons(list, 3, "skeleton-row");
+
+      setTimeout(() => {
+        list.innerHTML = "";
+        PhyraMed.SEARCH_HISTORY.forEach((h, i) => {
+          const div = document.createElement("div");
+          div.className = "history-item";
+          div.style.animationDelay = `${i * 0.06}s`;
+          div.innerHTML = `
+            <div>
+              <p class="query">${PhyraMed.escapeHTML(h.query)}</p>
+              <p class="cat">${PhyraMed.escapeHTML(h.category)}</p>
+            </div>
+            <span class="date">${PhyraMed.escapeHTML(h.date)}</span>
+          `;
+          list.appendChild(div);
+        });
+      }, 350);
+    });
+  </script>
+</body>
+</html>
