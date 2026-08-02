@@ -116,18 +116,3 @@ window.PhyraMed.SEARCH_HISTORY = [
   { id: 2, query: "uykusuzluk için bitkisel", category: "Uyku ve Dinlenme", date: "2026-06-28" },
   { id: 3, query: "goji berry yan etki", category: "Enerji ve Yorgunluk", date: "2026-06-25" },
 ];
-
-// SCRUM-37: Görsel tanıma modülü — henüz gerçek bir AI modeli bağlı değil,
-// bu yüzden kullanıcı hangi fotoğrafı yüklerse yüklesin aynı örnek sonuç
-// gösteriliyor. AI/Melike tarafındaki model hazır olunca bu sabit obje,
-// görsel analiz endpoint'inin döneceği gerçek yanıtla değiştirilecek —
-// alan adları (name, confidence, category, summary, related_product_id)
-// o yanıtla uyumlu olacak şekilde seçildi.
-window.PhyraMed.RECOGNITION_DEMO = {
-  name: "Ispanak (Spinacia oleracea)",
-  confidence: 92,
-  category: "Bağışıklık Desteği",
-  summary:
-    "Demir ve C vitamini açısından zengin, yapraklı bir sebzedir. Demir eksikliğine bağlı yorgunlukla mücadelede destekleyici olarak tüketilebilir.",
-  related_product_id: 101,
-};

@@ -8,6 +8,8 @@ class EvidenceLevel(str,enum.Enum):
     LOW="Zayıf"
     MIDDLE="Orta"
     HIGH="Güçlü"
+    WAITING="Bekliyor"
+    UNASSESSABLE="Değerlendirilemedi"
 
 class ProductStatus(str,enum.Enum):
     verified="Onaylanmış"

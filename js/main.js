@@ -192,6 +192,8 @@ const QUICK_REPLIES = [
   "Kanıt seviyesi ne demek?",
 ];
 
+const CHAT_HISTORY_LIMIT = 8;
+
 function initChatbot() {
   const root = document.querySelector(".chatbot-wrap");
   if (!root) return;
@@ -203,6 +205,7 @@ function initChatbot() {
   const input = root.querySelector(".chat-form input");
   const closeBtn = root.querySelector(".chat-header button");
   const quickWrap = root.querySelector(".quick-replies");
+  const conversationHistory = [];
 
   QUICK_REPLIES.forEach((q) => {
     const b = document.createElement("button");
@@ -240,6 +243,10 @@ async function send(text) {
     'button[type="submit"]'
   );
 
+  const historyPayload = conversationHistory.slice(
+    -CHAT_HISTORY_LIMIT
+  );
+
   addBubble("user", message);
 
   const loadingBubble = addBubble(
@@ -275,6 +282,7 @@ async function send(text) {
         },
         body: JSON.stringify({
           message,
+          history: historyPayload,
         }),
         signal: controller.signal,
       }
@@ -290,9 +298,29 @@ async function send(text) {
 
     const data = await response.json();
 
-    loadingBubble.textContent =
+    const assistantResponse =
       data.response ||
       "Chatbot yanıtı alınamadı.";
+
+    loadingBubble.textContent = assistantResponse;
+
+    conversationHistory.push(
+      {
+        role: "user",
+        content: message,
+      },
+      {
+        role: "assistant",
+        content: assistantResponse,
+      }
+    );
+
+    if (conversationHistory.length > CHAT_HISTORY_LIMIT) {
+      conversationHistory.splice(
+        0,
+        conversationHistory.length - CHAT_HISTORY_LIMIT
+      );
+    }
 
     setMood("happy");
   } catch (error) {
